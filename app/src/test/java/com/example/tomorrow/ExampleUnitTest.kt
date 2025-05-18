@@ -1,4 +1,4 @@
-package com.example.oqfacoaamnha
+package com.example.tomorrow
 
 import org.junit.Test
 
