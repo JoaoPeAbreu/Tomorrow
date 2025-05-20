@@ -1,119 +1,135 @@
 package com.example.tomorrow.ui.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.tomorrow.ui.navigation.AuthRoutes
+import com.example.tomorrow.ui.states.LoginUiState
 import com.example.tomorrow.ui.theme.TomorrowTheme
 
-@JvmOverloads
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-    navController: NavController
+    uiState: LoginUiState,
+    modifier: Modifier = Modifier,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit,
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
     Column(
-        modifier = Modifier
+        modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .verticalScroll(rememberScrollState())
     ) {
-        Text("Tomorrow Login")
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(it, color = androidx.compose.ui.graphics.Color.Red)
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                isLoading = true
-                errorMessage = null
-                viewModel.login(email, password) { success ->
-                    isLoading = false
-                    if (success) {
-                        navController.navigate(AuthRoutes.Home.route) {
-                            popUpTo(AuthRoutes.Login.route) { inclusive = true }
-                        }
-                    } else {
-                        errorMessage = "Login failed. Please check your credentials."
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
-        ) {
-            Text(if (isLoading) "Logging in..." else "Login")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(
-            onClick = {
-                navController.navigate(AuthRoutes.Register.route)
+        val isError = uiState.error != null
+        AnimatedVisibility(visible = isError) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.error)
+            ) {
+                val error = uiState.error ?: ""
+                Text(
+                    text = error,
+                    Modifier
+                        .padding(16.dp),
+                    color = MaterialTheme.colorScheme.onError
+                )
             }
+        }
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Don't have an account? Register")
+            Spacer(modifier = Modifier.size(16.dp))
+            Text(text = "O que devo fazer amanhã?")
+            Spacer(modifier = Modifier.size(16.dp))
+            val textFieldModifier = Modifier
+                .fillMaxWidth(0.8f)
+                .padding(8.dp)
+            OutlinedTextField(
+                value = uiState.email,
+                onValueChange = uiState.onEmailChange,
+                textFieldModifier,
+                shape = RoundedCornerShape(25),
+                label = {
+                    Text(text = "Email")
+                }
+            )
+            OutlinedTextField(
+                value = uiState.password,
+                onValueChange = uiState.onPasswordChange,
+                textFieldModifier,
+                shape = RoundedCornerShape(25),
+                label = {
+                    Text("Senha")
+                },
+            )
+            Button(
+                onClick = onLoginClick,
+                Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(8.dp)
+            ) {
+                Text(text = "Entrar")
+            }
+            TextButton(
+                onClick = onRegisterClick,
+                Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(8.dp)
+            ) {
+                Text(text = "Cadastrar")
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Default")
 @Composable
 fun LoginScreenPreview() {
     TomorrowTheme {
-        val navController = rememberNavController()
-        LoginScreen(navController = navController)
+        LoginScreen(
+            uiState = LoginUiState(),
+            onLoginClick = {},
+            onRegisterClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "with error")
+@Composable
+fun LoginScreen1Preview() {
+    TomorrowTheme {
+        LoginScreen(
+            uiState = LoginUiState(
+                error = "Erro ao fazer login"
+            ),
+            onLoginClick = {},
+            onRegisterClick = {}
+        )
     }
 }

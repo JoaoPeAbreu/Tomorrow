@@ -1,32 +1,60 @@
 package com.example.tomorrow.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.example.tomorrow.authentication.FirebaseAuthRepository
+import com.example.tomorrow.ui.states.LoginUiState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
-class LoginViewModel : ViewModel() {
-    private val auth: FirebaseAuth = Firebase.auth
+class LoginViewModel(
+    private val firebaseAuthRepository: FirebaseAuthRepository
+) : ViewModel() {
 
-    fun login(
-        email: String,
-        password: String,
-        onResult: (Boolean) -> Unit
-    ) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                onResult(task.isSuccessful)
-            }
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState = _uiState.asStateFlow()
+    val isAuthenticated = firebaseAuthRepository.currentUser
+        .map {
+            it != null
+        }
+
+    init {
+        _uiState.update { currentState ->
+            currentState.copy(
+                onEmailChange = { user ->
+                    _uiState.update {
+                        it.copy(email = user)
+                    }
+                },
+                onPasswordChange = { password ->
+                    _uiState.update {
+                        it.copy(password = password)
+                    }
+                }
+            )
+        }
     }
 
-    fun register(
-        email: String,
-        password: String,
-        onResult: (Boolean) -> Unit
-    ) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                onResult(task.isSuccessful)
+    suspend fun login() {
+        try {
+            firebaseAuthRepository
+                .login(
+                    email = _uiState.value.email,
+                    password = _uiState.value.password
+                )
+        } catch (e: Exception) {
+            Log.e("LoginViewModel", "login: ", e)
+            _uiState.update {
+                it.copy(error = "Erro ao fazer login")
             }
+            delay(3000)
+            _uiState.update {
+                it.copy(error = null)
+            }
+        }
     }
+
 }
