@@ -1,4 +1,4 @@
-package com.example.oqfacoaamnha.ui.theme
+package com.example.tomorrow.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
