@@ -13,11 +13,11 @@ import com.example.tomorrow.ui.auth.LoginViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-const val loginRoute: String = "signIn"
+const val loginRoute: String = "login"
 
 fun NavGraphBuilder.loginScreen(
     onNavigateToTasksList: () -> Unit,
-    onNavigateToSignUp: () -> Unit
+    onNavigateToRegister: () -> Unit
 ) {
     composable(loginRoute) {
         val viewModel = koinViewModel<LoginViewModel>()
@@ -37,13 +37,13 @@ fun NavGraphBuilder.loginScreen(
                     viewModel.login()
                 }
             },
-            onRegisterClick = onNavigateToSignUp
+            onRegisterClick = onNavigateToRegister
         )
     }
 
 }
 
-fun NavHostController.navigateToSignIn(
+fun NavHostController.navigateToLogin(
     navOptions: NavOptions? = null
 ) {
     navigate(loginRoute, navOptions)

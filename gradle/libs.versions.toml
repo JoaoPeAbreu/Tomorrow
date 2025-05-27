@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.0"
+coilNetworkOkhttp = "3.1.0"
 firebaseBom = "33.13.0"
 koinAndroid = "3.3.2"
 koinAndroidxCompose = "3.4.1"
@@ -15,9 +16,17 @@ composeBom = "2024.09.00"
 firebaseAuthKtx = "23.2.0"
 navigationComposeJvmstubs = "2.9.0"
 animationCoreLint = "1.8.1"
+roomCommonJvm = "2.7.1"
+roomCompiler = "2.7.1"
+roomRuntime = "2.7.1"
+roomRuntimeAndroid = "2.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilNetworkOkhttp" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -41,6 +50,8 @@ androidx-animation-core-lint = { group = "androidx.compose.animation", name = "a
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
+androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
+androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
