@@ -6,10 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [UserEntity::class], version = 1)
+@Database(entities = [UserEntity::class, Task::class], version = 1)
 @TypeConverters(CastConverter::class)
 abstract class UserDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun taskDao(): TaskDao
 
     companion object {
         @Volatile private var INSTANCE: UserDatabase? = null

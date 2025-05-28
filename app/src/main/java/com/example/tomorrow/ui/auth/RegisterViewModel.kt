@@ -3,8 +3,6 @@ package com.example.tomorrow.ui.auth
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.example.tomorrow.data.UserEntity
 import com.example.tomorrow.data.UserRepository
 import kotlinx.coroutines.launch
