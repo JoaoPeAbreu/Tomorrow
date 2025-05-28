@@ -3,16 +3,15 @@ package com.example.tomorrow.ui.auth
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import com.example.tomorrow.AppContextHolder
 import com.example.tomorrow.data.UserEntity
 import com.example.tomorrow.data.UserRepository
+import com.example.tomorrow.data.UserRepositoryProvider
 import kotlinx.coroutines.launch
-import javax.crypto.Cipher
-import kotlin.coroutines.coroutineContext
 
-class RegisterViewModel(private val repository: UserRepository) : ViewModel() {
+class RegisterViewModel() : ViewModel() {
 
+    private val userRepository = UserRepositoryProvider.getRepository(AppContextHolder.appContext)
     var name by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
@@ -34,17 +33,20 @@ class RegisterViewModel(private val repository: UserRepository) : ViewModel() {
     val encryptedPassword = String(encode_bytes, Charset.forName("UTF-8"))
 */
     fun insert(user: UserEntity) {
-        user.password
-        viewModelScope.launch { repository.addUser(user) }
+        viewModelScope.launch { userRepository.addUser(user) }
+    }
+
+    fun showUser(name: String) {
+        viewModelScope.launch { userRepository.getUserByName(name) }
     }
 
     val nameHasErrors by derivedStateOf {
-        if(name.isNotBlank() && name.length >= 3) true else false
+        val bool = !name.isNotBlank() && !(name.length >= 3)
+        bool
     }
 
     val emailHasErrors by derivedStateOf {
         if (email.isNotBlank()) {
-            // Email is considered erroneous until it completely matches EMAIL_ADDRESS.
             !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
         } else {
             false
@@ -52,27 +54,14 @@ class RegisterViewModel(private val repository: UserRepository) : ViewModel() {
     }
 
     val passwordHasErrors by derivedStateOf {
-        if(password.isNotBlank() && password.length >= 6) true else false
+        val bool = !password.isNotBlank() && !(password.length >= 6)
+        bool
     }
 
     val confirmPasswordHasErrors by derivedStateOf {
-        if(password.equals(confirmpassword)) true else false
+        val bool = !confirmpassword.isNotBlank() && !(password.equals(confirmpassword))
+        bool
     }
-
-    fun updateName(input: String) {
-        name = input
-    }
-
-    fun updateEmail(input: String) {
-        email = input
-    }
-    fun updatePassword(input: String) {
-        password = input
-    }
-    fun updateConfirmPassword(input: String) {
-        confirmpassword = input
-    }
-
 
 }
 
