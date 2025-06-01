@@ -26,16 +26,12 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(false) }
-    var showConfirmPassword by remember { mutableStateOf(false) }
 
-    // Preenche os campos com os dados do usuário quando a tela é carregada
     LaunchedEffect(Unit) {
         viewModel.currentUser?.let { user ->
             viewModel.name = user.displayName ?: ""
             viewModel.email = user.email ?: ""
-            // Limpa a senha para segurança
             viewModel.password = ""
-            viewModel.confirmpassword = ""
         }
     }
 
@@ -47,7 +43,6 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Cabeçalho com botão de voltar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -82,7 +77,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campos do formulário (iguais ao cadastro)
         OutlinedTextField(
             value = viewModel.name,
             label = { Text("Nome") },

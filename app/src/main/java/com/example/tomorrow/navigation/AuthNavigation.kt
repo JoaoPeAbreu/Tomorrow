@@ -46,10 +46,9 @@ fun AuthNavigation(navController: NavHostController) {
             ProfileScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogout = {
-                    // Realiza o logout e volta para a tela de login
                     Firebase.auth.signOut()
                     navController.navigate(AuthRoutes.LOGIN) {
-                        popUpTo(0) // Limpa toda a pilha de navegação
+                        popUpTo(0)
                     }
                 }
             )

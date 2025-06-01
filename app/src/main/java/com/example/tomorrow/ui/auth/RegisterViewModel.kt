@@ -138,19 +138,15 @@ class RegisterViewModel() : ViewModel() {
 
             viewModelScope.launch {
                 try {
-                    // Usamos a propriedade currentUser que acabamos de adicionar
                     currentUser?.let { user ->
-                        // Atualiza o nome
                         val profileUpdates = UserProfileChangeRequest.Builder()
                             .setDisplayName(name).build()
                         user.updateProfile(profileUpdates).await()
 
-                        // Atualiza o email (em produção, requer reautenticação)
                         if (email != user.email) {
                             user.updateEmail(email).await()
                         }
 
-                        // Atualiza a senha se foi fornecida
                         if (password.isNotBlank()) {
                             user.updatePassword(password).await()
                         }

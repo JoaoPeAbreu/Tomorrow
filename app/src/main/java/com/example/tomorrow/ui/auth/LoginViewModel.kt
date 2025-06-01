@@ -5,7 +5,6 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,7 +102,7 @@ class LoginViewModel() : ViewModel() {
                             errorMessage = e.message ?: "Um erro desconhecido ocorreu."
                         )
                     }
-                    e.printStackTrace() // Log the error for debugging
+                    e.printStackTrace()
                 }
             }
         }
