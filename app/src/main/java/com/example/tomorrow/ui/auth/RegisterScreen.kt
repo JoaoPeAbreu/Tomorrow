@@ -21,11 +21,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 
 @Composable
-fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
+fun RegisterScreen(
+    viewModel: RegisterViewModel = viewModel(),
+    onBackClick: () -> Unit = {},
+    onRegisterSuccess: () -> Unit = {}
+) {
 
     val uiState by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(value = false) }
@@ -33,7 +38,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
 
     LaunchedEffect(uiState.registrationSuccess) {
         if (uiState.registrationSuccess) {
-            //mudar de tela
+            onRegisterSuccess()
         }
     }
 
@@ -44,6 +49,19 @@ fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar"
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
         Text("Crie uma nova conta", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(32.dp))
 
@@ -157,7 +175,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
         )
         Spacer(Modifier.height(24.dp))
 
-        Button(onClick = { viewModel.registerUser() },
+        Button(onClick = { viewModel.registerUser(onRegisterSuccess) },
             enabled = !uiState.isLoading && viewModel.noErrosRegister,
             modifier = Modifier.fillMaxWidth()
         ) {

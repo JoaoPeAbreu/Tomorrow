@@ -25,6 +25,7 @@ data class RegistrationUiState(
 class RegisterViewModel() : ViewModel() {
 
     private val auth: FirebaseAuth = Firebase.auth
+    val currentUser = auth.currentUser
 
     private val _uiState = MutableStateFlow(RegistrationUiState())
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
@@ -60,7 +61,7 @@ class RegisterViewModel() : ViewModel() {
         } else false
     }
 
-    fun registerUser() {
+    fun registerUser(onSuccess: () -> Unit) {
         if (noErrosRegister) {
             _uiState.update { it.copy(errorMessage = null) }
         } else {
@@ -88,6 +89,7 @@ class RegisterViewModel() : ViewModel() {
                     user.updateProfile(profileUpdates).await()
 
                     _uiState.update { it.copy(isLoading = false, registrationSuccess = true) }
+                    onSuccess()
 
                 } else {
                     _uiState.update {
@@ -116,5 +118,63 @@ class RegisterViewModel() : ViewModel() {
     /*fun resetState() {
         _uiState.update { RegistrationUiState() } // Reset to initial state
     }*/
+    // Adicione esta função ao RegisterViewModel
+
+    fun logout() {
+        auth.signOut()
+    }
+
+    fun updateUser() {
+        if (noErrosRegister) {
+            _uiState.update { it.copy(errorMessage = null) }
+
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    registrationSuccess = false,
+                    errorMessage = null
+                )
+            }
+
+            viewModelScope.launch {
+                try {
+                    // Usamos a propriedade currentUser que acabamos de adicionar
+                    currentUser?.let { user ->
+                        // Atualiza o nome
+                        val profileUpdates = UserProfileChangeRequest.Builder()
+                            .setDisplayName(name).build()
+                        user.updateProfile(profileUpdates).await()
+
+                        // Atualiza o email (em produção, requer reautenticação)
+                        if (email != user.email) {
+                            user.updateEmail(email).await()
+                        }
+
+                        // Atualiza a senha se foi fornecida
+                        if (password.isNotBlank()) {
+                            user.updatePassword(password).await()
+                        }
+
+                        _uiState.update { it.copy(isLoading = false, registrationSuccess = true) }
+                    } ?: run {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = "Nenhum usuário logado"
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            registrationSuccess = false,
+                            errorMessage = e.message ?: "Erro ao atualizar perfil"
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 

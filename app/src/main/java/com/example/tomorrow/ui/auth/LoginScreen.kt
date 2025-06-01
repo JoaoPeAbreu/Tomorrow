@@ -23,19 +23,26 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.update
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    viewModel: LoginViewModel = viewModel(),
+    onNavigateToRegister: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
+) {
 
     val uiState by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(value = false) }
 
     LaunchedEffect(uiState.loginSuccess) {
-        //mudar de tela???
+        if (uiState.loginSuccess) {
+            onLoginSuccess()
+        }
     }
 
     Column (
@@ -102,11 +109,20 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
         )
         Spacer(Modifier.height(24.dp))
 
-        Button(onClick = { viewModel.loginUser() },
+        Button(onClick = { viewModel.loginUser(onLoginSuccess) },
             enabled = !uiState.isLoading && viewModel.noErrosRegister && !uiState.alreadyLogged,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (uiState.isLoading) "Carregando..." else "Login")
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        TextButton(
+            onClick = onNavigateToRegister,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Criar uma nova conta")
         }
 
         if (uiState.isLoading) {

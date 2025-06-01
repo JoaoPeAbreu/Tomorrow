@@ -52,10 +52,11 @@ class LoginViewModel() : ViewModel() {
             true
         } else false
     }
-    fun loginUser() {
+    fun loginUser(onSuccess: () -> Unit) {
 
         if (currentUser != null) {
             _uiState.update { it.copy(alreadyLogged = true) }
+            onSuccess()
         } else {
             _uiState.update { it.copy(alreadyLogged = false) }
 
@@ -81,6 +82,7 @@ class LoginViewModel() : ViewModel() {
 
                     if (user != null) {
                         _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
+                        onSuccess()
 
                     } else {
                         _uiState.update {
