@@ -23,18 +23,19 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.flow.update
 
 @Composable
-fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
+fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
 
     val uiState by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(value = false) }
-    var showConfirmPassword by remember { mutableStateOf(value = false) }
 
-    LaunchedEffect(uiState.registrationSuccess) {
-        if (uiState.registrationSuccess) {
-            //mudar de tela
-        }
+    LaunchedEffect(uiState.loginSuccess) {
+        //mudar de tela???
     }
 
     Column (
@@ -44,22 +45,8 @@ fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Crie uma nova conta", style = MaterialTheme.typography.titleLarge)
+        Text("Login", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = viewModel.name,
-            label = { Text("Nome") },
-            onValueChange = { input -> viewModel.name = input },
-            isError = viewModel.nameHasErrors,
-            supportingText = {
-                if (viewModel.nameHasErrors) {
-                    Text("O nome deve ter pelo menos 3 dígitos.")
-                }
-            }
-        )
-        Spacer(Modifier.height(16.dp))
-
 
         OutlinedTextField(
             value = viewModel.email,
@@ -113,55 +100,13 @@ fun RegisterScreen(viewModel: RegisterViewModel = viewModel()) {
                 }
             }
         )
-        Spacer(Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = viewModel.confirmpassword,
-            label = { Text("Confirme a senha") },
-            onValueChange = { input -> viewModel.confirmpassword = input },
-            isError = viewModel.confirmPasswordHasErrors,
-            supportingText = {
-                if (viewModel.confirmPasswordHasErrors) {
-                    Text("As duas senhas devem ser iguais.")
-                }
-
-            },
-            visualTransformation = if (showConfirmPassword) {
-
-                VisualTransformation.None
-
-            } else {
-
-                PasswordVisualTransformation()
-
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            trailingIcon = {
-                if (showConfirmPassword) {
-                    IconButton(onClick = { showConfirmPassword = false }) {
-                        Icon(
-                            imageVector = Icons.Filled.Visibility,
-                            contentDescription = "hide_password"
-                        )
-                    }
-                } else {
-                    IconButton(
-                        onClick = { showConfirmPassword = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.VisibilityOff,
-                            contentDescription = "hide_password"
-                        )
-                    }
-                }
-            }
-        )
         Spacer(Modifier.height(24.dp))
 
-        Button(onClick = { viewModel.registerUser() },
-            enabled = !uiState.isLoading && viewModel.noErrosRegister,
+        Button(onClick = { viewModel.loginUser() },
+            enabled = !uiState.isLoading && viewModel.noErrosRegister && !uiState.alreadyLogged,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (uiState.isLoading) "Carregando..." else "Cadastre-se")
+            Text(if (uiState.isLoading) "Carregando..." else "Login")
         }
 
         if (uiState.isLoading) {
