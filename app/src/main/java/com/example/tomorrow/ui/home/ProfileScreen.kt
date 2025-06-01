@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -17,10 +19,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tomorrow.ui.auth.RegisterViewModel
+import com.example.tomorrow.ui.theme.ColorTheme
+import com.example.tomorrow.ui.theme.ThemeViewModel
 
 @Composable
 fun ProfileScreen(
     viewModel: RegisterViewModel = viewModel(),
+    themeViewModel: ThemeViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
@@ -47,15 +52,28 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.size(48.dp))
-                {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Voltar"
-                    )
-                }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Meu Perfil",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { themeViewModel.toggleTheme() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+            ) {
+                Icon(
+                    imageVector = if (themeViewModel.currentTheme == ColorTheme.LIGHT)
+                        Icons.Filled.DarkMode else Icons.Filled.LightMode,
+                    contentDescription = "Alternar tema",
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            }
 
             IconButton(
                 onClick = onLogout,
@@ -66,13 +84,6 @@ fun ProfileScreen(
                         contentDescription = "Sair"
                     )
                 }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                        text = "Meu Perfil",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f)
-            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))

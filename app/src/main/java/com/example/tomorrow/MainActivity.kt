@@ -5,11 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.tomorrow.navigation.AuthNavigation
+import com.example.tomorrow.ui.theme.ThemeViewModel
 import com.example.tomorrow.ui.theme.TomorrowTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,13 +18,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TomorrowTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    AuthNavigation(navController = navController)
+            val themeViewModel: ThemeViewModel = viewModel()
+            TomorrowTheme(
+                theme = themeViewModel.currentTheme,
+                dynamicColor = true
+            ) {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AuthNavigation(
+                        navController = rememberNavController(),
+                        themeViewModel = themeViewModel
+                    )
                 }
             }
         }

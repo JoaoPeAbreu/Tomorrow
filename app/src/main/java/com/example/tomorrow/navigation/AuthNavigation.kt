@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.tomorrow.ui.auth.LoginScreen
 import com.example.tomorrow.ui.auth.RegisterScreen
 import com.example.tomorrow.ui.home.ProfileScreen
+import com.example.tomorrow.ui.theme.ThemeViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -17,7 +18,10 @@ object AuthRoutes {
 }
 
 @Composable
-fun AuthNavigation(navController: NavHostController) {
+fun AuthNavigation(
+    navController: NavHostController,
+    themeViewModel: ThemeViewModel
+) {
     NavHost(
         navController = navController,
         startDestination = AuthRoutes.LOGIN
@@ -44,6 +48,7 @@ fun AuthNavigation(navController: NavHostController) {
         }
         composable(AuthRoutes.PROFILE) {
             ProfileScreen(
+                themeViewModel = themeViewModel,
                 onBackClick = { navController.popBackStack() },
                 onLogout = {
                     Firebase.auth.signOut()
