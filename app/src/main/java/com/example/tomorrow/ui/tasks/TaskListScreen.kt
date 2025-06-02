@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tomorrow.data.Task
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
@@ -49,12 +50,17 @@ fun TaskListScreen(
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(tasks) { task ->
-                    TaskItem(task = task, onClick = { onTaskClick(task) })
+                    TaskItemEditable(
+                        task = task,
+                        onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) }
+                        )
+                    }
                 }
-            }
+
+             }
         }
     }
-}
+
 
 @Composable
 fun FilterSection(
@@ -164,3 +170,34 @@ fun statusLabel(status: Int): String = when (status) {
     2 -> "Concluído"
     else -> "Desconhecido"
 }
+
+@Composable
+fun MockTaskListScreen() {
+    val fakeTasks = listOf(
+        Task(
+            title = "Estudar Compose",
+            description = "Ver os fundamentos de Jetpack Compose",
+            priority = 2,
+            status = 0
+        ),
+        Task(
+            title = "Trabalhar no projeto",
+            description = "Avançar no app de tarefas",
+            priority = 3,
+            status = 1
+        ),
+        Task(
+            title = "Enviar relatório",
+            description = "Relatório de atividades",
+            priority = 1,
+            status = 2
+        )
+    )
+
+    LazyColumn {
+        items(fakeTasks) { task ->
+            TaskItem(task = task, onClick = {})
+        }
+    }
+}
+

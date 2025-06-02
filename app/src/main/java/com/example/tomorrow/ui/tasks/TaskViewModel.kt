@@ -46,4 +46,30 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         _priorityFilter.value = null
         _statusFilter.value = null
     }
+
+    fun updateTask(updatedTask: Task) {
+        viewModelScope.launch {
+            repository.updateTask(updatedTask) // Atualiza no repositório (banco, API etc)
+
+            // Atualiza a lista local, substituindo a tarefa antiga pela atualizada
+            val currentList = _tasks.value.toMutableList()
+            val index = currentList.indexOfFirst { it.id == updatedTask.id }
+            if (index != -1) {
+                currentList[index] = updatedTask
+                _tasks.value = currentList
+            }
+        }
+    }
+
+    fun addTask(newTask: Task) {
+        viewModelScope.launch {
+            repository.addTask(newTask)
+            // Opcional: atualizar _tasks localmente para refletir a mudança imediata
+            val currentList = _tasks.value.toMutableList()
+            currentList.add(newTask)
+            _tasks.value = currentList
+        }
+    }
+
+
 }
