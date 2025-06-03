@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tomorrow.data.Task
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
@@ -52,15 +51,14 @@ fun TaskListScreen(
                 items(tasks) { task ->
                     TaskItemEditable(
                         task = task,
-                        onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) }
-                        )
-                    }
+                        onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) },
+                        onTaskDelete = { taskToDelete -> viewModel.deleteTask(taskToDelete) }
+                    )
                 }
-
-             }
+            }
         }
     }
-
+}
 
 @Composable
 fun FilterSection(
@@ -200,4 +198,3 @@ fun MockTaskListScreen() {
         }
     }
 }
-

@@ -71,5 +71,13 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         }
     }
 
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            repository.deleteTask(task)
+            _tasks.value = _tasks.value.filter { it.id != task.id }
+        }
+    }
+
+
 
 }

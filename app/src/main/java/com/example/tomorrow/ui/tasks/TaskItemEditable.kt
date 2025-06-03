@@ -8,14 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-
-import com.example.tomorrow.data.Task  // importante: seu modelo de dados
+import com.example.tomorrow.data.Task
 
 @Composable
 fun TaskItemEditable(
     task: Task,
-    onTaskUpdate: (Task) -> Unit
+    onTaskUpdate: (Task) -> Unit,
+    onTaskDelete: (Task) -> Unit
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedTitle by remember { mutableStateOf(task.title) }
@@ -62,6 +63,10 @@ fun TaskItemEditable(
                     IconButton(onClick = { isEditing = true }) {
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar")
                     }
+                }
+
+                IconButton(onClick = { onTaskDelete(task) }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Deletar")
                 }
             }
 
