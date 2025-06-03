@@ -24,7 +24,7 @@ import com.example.tomorrow.ui.theme.ThemeViewModel
 
 @Composable
 fun ProfileScreen(
-    viewModel: RegisterViewModel = viewModel(),
+    viewModel: ProfileViewModel = viewModel(),
     themeViewModel: ThemeViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {}
@@ -146,7 +146,7 @@ fun ProfileScreen(
 
         Button(
             onClick = { viewModel.updateUser() },
-            enabled = !uiState.isLoading && viewModel.noErrosRegister,
+            enabled = !uiState.isLoading && viewModel.noErrosProfile,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (uiState.isLoading) "Salvando..." else "Salvar Alterações")

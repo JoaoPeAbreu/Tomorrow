@@ -4,7 +4,10 @@ import android.util.Patterns
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -95,14 +98,32 @@ class LoginViewModel() : ViewModel() {
 
 
                 } catch (e: Exception) {
+                    val errorMessage: String = when (e) {
+
+                        is FirebaseAuthInvalidUserException -> {
+                            "Não encontramos um usuário com este e-mail ou a conta foi desativada."
+                        }
+
+                        is FirebaseAuthInvalidCredentialsException -> {
+                            "O e-mail ou a senha está incorreta. Por favor, tente novamente."
+                        }
+
+                        is FirebaseTooManyRequestsException -> {
+                            "Muitas tentativas de login falharam. Tente novamente mais tarde."
+                        }
+
+                        else -> {
+                            e.message ?: "Um erro desconhecido ocorreu durante o login."
+                        }
+                    }
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             loginSuccess = false,
-                            errorMessage = e.message ?: "Um erro desconhecido ocorreu."
+                            errorMessage = e.message ?: errorMessage
                         )
                     }
-                    e.printStackTrace()
                 }
             }
         }

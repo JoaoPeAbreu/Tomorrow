@@ -5,6 +5,9 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -61,12 +64,18 @@ class RegisterViewModel() : ViewModel() {
         } else false
     }
 
+    val isBlank by derivedStateOf {
+        if(name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmpassword.isNotBlank()) false else true
+    }
+
     fun registerUser(onSuccess: () -> Unit) {
         if (noErrosRegister) {
             _uiState.update { it.copy(errorMessage = null) }
         } else {
             _uiState.update { it.copy(errorMessage = "Corrija os erros indicados.") }
         }
+
+
 
         _uiState.update {
             it.copy(
@@ -101,16 +110,33 @@ class RegisterViewModel() : ViewModel() {
                     }
                 }
 
-
             } catch (e: Exception) {
+                val errorMessage: String = when (e) {
+
+                    is FirebaseAuthWeakPasswordException -> {
+                        "A senha é muito fraca. Por favor, use uma combinação mais forte."
+                    }
+
+                    is FirebaseAuthInvalidCredentialsException -> {
+                        "O formato do e-mail é inválido. Por favor, verifique."
+                    }
+
+                    is FirebaseAuthUserCollisionException -> {
+                        "Este e-mail já está cadastrado. Por favor, use outro e-mail ou faça login."
+                    }
+
+                    else -> {
+                        e.message ?: "Um erro desconhecido ocorreu durante o cadastro."
+                    }
+                }
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         registrationSuccess = false,
-                        errorMessage = e.message ?: "Um erro desconhecido ocorreu durante o cadastro"
+                        errorMessage = e.message ?: errorMessage
                     )
                 }
-                e.printStackTrace()
             }
         }
     }
@@ -124,53 +150,5 @@ class RegisterViewModel() : ViewModel() {
         auth.signOut()
     }
 
-    fun updateUser() {
-        if (noErrosRegister) {
-            _uiState.update { it.copy(errorMessage = null) }
-
-            _uiState.update {
-                it.copy(
-                    isLoading = true,
-                    registrationSuccess = false,
-                    errorMessage = null
-                )
-            }
-
-            viewModelScope.launch {
-                try {
-                    currentUser?.let { user ->
-                        val profileUpdates = UserProfileChangeRequest.Builder()
-                            .setDisplayName(name).build()
-                        user.updateProfile(profileUpdates).await()
-
-                        if (email != user.email) {
-                            user.updateEmail(email).await()
-                        }
-
-                        if (password.isNotBlank()) {
-                            user.updatePassword(password).await()
-                        }
-
-                        _uiState.update { it.copy(isLoading = false, registrationSuccess = true) }
-                    } ?: run {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = "Nenhum usuário logado"
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            registrationSuccess = false,
-                            errorMessage = e.message ?: "Erro ao atualizar perfil"
-                        )
-                    }
-                }
-            }
-        }
-    }
 }
 
