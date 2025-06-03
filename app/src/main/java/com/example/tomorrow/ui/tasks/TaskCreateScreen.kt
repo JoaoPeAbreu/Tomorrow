@@ -1,5 +1,6 @@
 package com.example.tomorrow.ui.tasks
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -73,6 +74,9 @@ fun TaskCreateScreen(
                     status = 0, // A Fazer por padrão
                     userId = userId
                 )
+
+                Log.d("TaskCreate", "Tarefa criada: $newTask")
+
                 viewModel.addTask(newTask)
                 onTaskCreated()
             },
