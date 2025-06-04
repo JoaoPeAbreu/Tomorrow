@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val themeViewModel: ThemeViewModel = viewModel()
+            themeViewModel.InitializeTheme()
             TomorrowTheme(
                 theme = themeViewModel.currentTheme,
                 dynamicColor = true
