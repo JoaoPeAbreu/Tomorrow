@@ -5,12 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.tomorrow.navigation.AuthNavigation
+import com.example.tomorrow.ui.theme.ThemeViewModel
 import com.example.tomorrow.ui.theme.TomorrowTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,30 +18,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TomorrowTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+            val themeViewModel: ThemeViewModel = viewModel()
+            TomorrowTheme(
+                theme = themeViewModel.currentTheme,
+                dynamicColor = true
+            ) {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AuthNavigation(
+                        navController = rememberNavController(),
+                        themeViewModel = themeViewModel
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TomorrowTheme {
-        Greeting("Android")
     }
 }

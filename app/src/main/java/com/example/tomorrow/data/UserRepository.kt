@@ -6,5 +6,5 @@ class UserRepository(private val dao: UserDao) {
     suspend fun addUser(user: UserEntity) = dao.insertUser(user)
     suspend fun removeUser(user: UserEntity) = dao.deleteUser(user)
     suspend fun updateUser(user: UserEntity) = dao.updateUser(user)
-
+    suspend fun getUserByName(userName: String): UserEntity? = dao.getUserByName(userName)
 }

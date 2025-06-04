@@ -1,135 +1,134 @@
 package com.example.tomorrow.ui.auth
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.tomorrow.ui.states.LoginUiState
-import com.example.tomorrow.ui.theme.TomorrowTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
-    uiState: LoginUiState,
-    modifier: Modifier = Modifier,
-    onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit,
+    viewModel: LoginViewModel = viewModel(),
+    onNavigateToRegister: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
 ) {
-    Column(
-        modifier
+
+    val uiState by viewModel.uiState.collectAsState()
+    var showPassword by remember { mutableStateOf(value = false) }
+
+    LaunchedEffect(uiState.loginSuccess) {
+        if (uiState.loginSuccess) {
+            onLoginSuccess()
+        }
+    }
+
+    Column (
+        modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        val isError = uiState.error != null
-        AnimatedVisibility(visible = isError) {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.error)
-            ) {
-                val error = uiState.error ?: ""
-                Text(
-                    text = error,
-                    Modifier
-                        .padding(16.dp),
-                    color = MaterialTheme.colorScheme.onError
-                )
-            }
-        }
-        Column(
-            Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.size(16.dp))
-            Text(text = "O que devo fazer amanhã?")
-            Spacer(modifier = Modifier.size(16.dp))
-            val textFieldModifier = Modifier
-                .fillMaxWidth(0.8f)
-                .padding(8.dp)
-            OutlinedTextField(
-                value = uiState.email,
-                onValueChange = uiState.onEmailChange,
-                textFieldModifier,
-                shape = RoundedCornerShape(25),
-                label = {
-                    Text(text = "Email")
+        Text("Login", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = viewModel.email,
+            label = { Text("Email") },
+            onValueChange = { input -> viewModel.email = input },
+            isError = viewModel.emailHasErrors,
+            supportingText = {
+                if (viewModel.emailHasErrors) {
+                    Text("Formato de email incorreto.")
                 }
-            )
-            OutlinedTextField(
-                value = uiState.password,
-                onValueChange = uiState.onPasswordChange,
-                textFieldModifier,
-                shape = RoundedCornerShape(25),
-                label = {
-                    Text("Senha")
-                },
-            )
-            Button(
-                onClick = onLoginClick,
-                Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(8.dp)
-            ) {
-                Text(text = "Entrar")
             }
-            TextButton(
-                onClick = onRegisterClick,
-                Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(8.dp)
-            ) {
-                Text(text = "Cadastrar")
+        )
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = viewModel.password,
+            label = { Text("Senha") },
+            onValueChange = { input -> viewModel.password = input },
+            isError = viewModel.passwordHasErrors,
+            supportingText = {
+                if (viewModel.passwordHasErrors) {
+                    Text("A senha deve ter pelo menos 6 dígitos.")
+                }
+            },
+            visualTransformation = if (showPassword) {
+
+                VisualTransformation.None
+
+            } else {
+
+                PasswordVisualTransformation()
+
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                if (showPassword) {
+                    IconButton(onClick = { showPassword = false }) {
+                        Icon(
+                            imageVector = Icons.Filled.Visibility,
+                            contentDescription = "hide_password"
+                        )
+                    }
+                } else {
+                    IconButton (
+                        onClick = { showPassword = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.VisibilityOff,
+                            contentDescription = "hide_password"
+                        )
+                    }
+                }
             }
+        )
+        Spacer(Modifier.height(24.dp))
+
+        Button(onClick = { viewModel.loginUser(onLoginSuccess) },
+            enabled = !uiState.isLoading && viewModel.noErrosRegister && !uiState.alreadyLogged,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (uiState.isLoading) "Carregando..." else "Login")
         }
-    }
-}
 
-@Preview(showBackground = true, name = "Default")
-@Composable
-fun LoginScreenPreview() {
-    TomorrowTheme {
-        LoginScreen(
-            uiState = LoginUiState(),
-            onLoginClick = {},
-            onRegisterClick = {}
-        )
-    }
-}
+        Spacer(Modifier.height(8.dp))
 
-@Preview(showBackground = true, name = "with error")
-@Composable
-fun LoginScreen1Preview() {
-    TomorrowTheme {
-        LoginScreen(
-            uiState = LoginUiState(
-                error = "Erro ao fazer login"
-            ),
-            onLoginClick = {},
-            onRegisterClick = {}
-        )
+        TextButton(
+            onClick = onNavigateToRegister,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Criar uma nova conta")
+        }
+
+        if (uiState.isLoading) {
+            Spacer(Modifier.height(16.dp))
+            CircularProgressIndicator()
+        }
+
+        uiState.errorMessage?.let { message ->
+            Spacer(Modifier.height(16.dp))
+            Text(message, color = MaterialTheme.colorScheme.error)
+        }
     }
 }
