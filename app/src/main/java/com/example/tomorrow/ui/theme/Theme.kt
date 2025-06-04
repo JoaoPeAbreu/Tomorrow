@@ -14,7 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
 enum class ColorTheme {
-    SYSTEM, LIGHT, DARK
+    LIGHT, DARK
 }
 
 private val DarkColorScheme = darkColorScheme(
@@ -29,18 +29,16 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40
 )
 
-val LocalColorTheme = compositionLocalOf { ColorTheme.SYSTEM }
+val LocalColorTheme = compositionLocalOf { ColorTheme.DARK }
 
 @Composable
 fun TomorrowTheme(
-    theme: ColorTheme = ColorTheme.SYSTEM,
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    theme: ColorTheme,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val useDarkTheme = when (theme) {
-        ColorTheme.SYSTEM -> darkTheme
         ColorTheme.LIGHT -> false
         ColorTheme.DARK -> true
     }
