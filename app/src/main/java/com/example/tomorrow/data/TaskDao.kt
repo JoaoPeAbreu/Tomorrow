@@ -20,4 +20,14 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: String): Task?
+
+    @Query("""
+    SELECT * FROM tasks
+    WHERE userId = :userId
+    ORDER BY 
+        CASE WHEN completedAtMillis IS NULL THEN 1 ELSE 0 END,
+        completedAtMillis
+    """)
+    fun getTasksOrderedByCompletion(userId: String): Flow<List<Task>>
+
 }

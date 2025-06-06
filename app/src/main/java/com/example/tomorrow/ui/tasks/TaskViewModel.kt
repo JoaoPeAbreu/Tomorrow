@@ -22,29 +22,55 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
     private val _priorityFilter = MutableStateFlow<Int?>(null)
     private val _statusFilter = MutableStateFlow<Int?>(null)
 
+    private val userId = "mock-user" // Ajuste conforme seu fluxo real de usuário
+
+    // Para controlar observações das subtasks e evitar duplicidade
+    private val observedTaskIds = mutableSetOf<String>()
+
     init {
-        observeTasks()
+        observeTasksOrderedAndFiltered()
     }
 
-    private fun observeTasks() {
+    private fun observeTasksOrderedAndFiltered() {
         viewModelScope.launch {
-            repository.getTasksForUser("mock-user")
-                .combine(_priorityFilter) { tasks, priority ->
-                    priority?.let { p -> tasks.filter { it.priority == p } } ?: tasks
+            combine(
+                repository.getTasksOrderedByCompletion(userId),
+                _priorityFilter,
+                _statusFilter
+            ) { tasks, priority, status ->
+                tasks.filter { task ->
+                    (priority == null || task.priority == priority) &&
+                            (status == null || task.status == status)
                 }
-                .combine(_statusFilter) { tasks, status ->
-                    status?.let { s -> tasks.filter { it.status == s } } ?: tasks
+            }.collect { filteredTasks ->
+                _tasks.value = filteredTasks
+
+                // Atualiza observações das subtasks só para novas tasks
+                val currentObserved = observedTaskIds.toSet()
+                val newTaskIds = filteredTasks.map { it.id }.toSet()
+
+                // Remove observações de tasks que saíram da lista (opcional)
+                val removedTaskIds = currentObserved - newTaskIds
+                removedTaskIds.forEach { removedId ->
+                    observedTaskIds.remove(removedId)
+                    val newMap = _subTasksMap.value.toMutableMap()
+                    newMap.remove(removedId)
+                    _subTasksMap.value = newMap
                 }
-                .collect { filteredTasks ->
-                    _tasks.value = filteredTasks
-                    filteredTasks.forEach { task ->
-                        observeSubTasksForTask(task.id)
-                    }
+
+                // Adiciona observações para tasks novas
+                val taskIdsToObserve = newTaskIds - currentObserved
+                taskIdsToObserve.forEach { taskId ->
+                    observeSubTasksForTask(taskId)
                 }
+            }
         }
     }
 
     private fun observeSubTasksForTask(taskId: String) {
+        if (observedTaskIds.contains(taskId)) return
+        observedTaskIds.add(taskId)
+
         viewModelScope.launch {
             repository.getSubTasksForTask(taskId).collect { subtasks ->
                 val newMap = _subTasksMap.value.toMutableMap()
@@ -90,6 +116,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         val newMap = _subTasksMap.value.toMutableMap()
         newMap.remove(task.id)
         _subTasksMap.value = newMap
+        observedTaskIds.remove(task.id)
     }
 
     // Subtasks
@@ -122,4 +149,5 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         currentMap[subTask.taskId] = list
         _subTasksMap.value = currentMap
     }
+
 }
