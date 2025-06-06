@@ -34,10 +34,36 @@ fun TaskItemEditable(
                 Checkbox(
                     checked = task.status == 2,
                     onCheckedChange = { checked ->
-                        val updatedTask = task.copy(status = if (checked) 2 else 0)
+                        val now = System.currentTimeMillis()
+                        val updatedTask = when {
+                            checked -> {
+                                // Concluir tarefa
+                                val elapsed = if (!task.isPaused && task.startedAtMillis != null) {
+                                    now - task.startedAtMillis
+                                } else 0L
+                                task.copy(
+                                    status = 2,
+                                    startedAtMillis = null,
+                                    completedAtMillis = now,
+                                    isPaused = false,
+                                    totalDurationMillis = task.totalDurationMillis + elapsed
+                                )
+                            }
+                            else -> {
+                                // Reabrir tarefa
+                                task.copy(
+                                    status = 0,
+                                    startedAtMillis = null,
+                                    completedAtMillis = null,
+                                    isPaused = false,
+                                    totalDurationMillis = 0L
+                                )
+                            }
+                        }
                         onTaskUpdate(updatedTask)
                     }
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
 
                 if (isEditing) {
@@ -73,6 +99,72 @@ fun TaskItemEditable(
             Spacer(modifier = Modifier.height(4.dp))
             Text("Prioridade: ${priorityLabel(task.priority)}")
             Text("Status: ${statusLabel(task.status)}")
+
+            // Controles de tempo
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                when (task.status) {
+                    0 -> {
+                        Button(onClick = {
+                            val now = System.currentTimeMillis()
+                            onTaskUpdate(task.copy(
+                                status = 1,
+                                startedAtMillis = now,
+                                isPaused = false
+                            ))
+                        }) {
+                            Text("Iniciar")
+                        }
+                    }
+
+                    1 -> {
+                        if (task.isPaused) {
+                            Button(onClick = {
+                                val now = System.currentTimeMillis()
+                                onTaskUpdate(task.copy(
+                                    startedAtMillis = now,
+                                    isPaused = false
+                                ))
+                            }) {
+                                Text("Retomar")
+                            }
+                        } else {
+                            Button(onClick = {
+                                val now = System.currentTimeMillis()
+                                val elapsed = now - (task.startedAtMillis ?: now)
+                                onTaskUpdate(task.copy(
+                                    startedAtMillis = null,
+                                    isPaused = true,
+                                    totalDurationMillis = task.totalDurationMillis + elapsed
+                                ))
+                            }) {
+                                Text("Pausar")
+                            }
+
+                            Button(onClick = {
+                                val now = System.currentTimeMillis()
+                                val elapsed = now - (task.startedAtMillis ?: now)
+                                onTaskUpdate(task.copy(
+                                    status = 2,
+                                    completedAtMillis = now,
+                                    startedAtMillis = null,
+                                    isPaused = false,
+                                    totalDurationMillis = task.totalDurationMillis + elapsed
+                                ))
+                            }) {
+                                Text("Concluir")
+                            }
+                        }
+                    }
+
+                    2 -> {
+                        val totalMinutes = task.totalDurationMillis / 60000
+                        Text("Tempo total: $totalMinutes min")
+                    }
+                }
+            }
         }
     }
 }
