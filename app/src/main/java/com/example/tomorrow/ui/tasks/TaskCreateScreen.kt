@@ -11,11 +11,12 @@ import android.app.DatePickerDialog
 import androidx.compose.ui.platform.LocalContext
 import java.util.Calendar
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCreateScreen(
-    viewModel: TaskViewModel,
+    viewModel: TaskViewModel = viewModel(),
     onTaskCreated: () -> Unit,
     onCancel: () -> Unit,          // callback para voltar/cancelar
     userId: String = "mock-user"

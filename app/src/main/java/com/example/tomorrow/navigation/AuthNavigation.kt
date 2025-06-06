@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import com.example.tomorrow.ui.auth.LoginScreen
 import com.example.tomorrow.ui.auth.RegisterScreen
 import com.example.tomorrow.ui.home.ProfileScreen
+import com.example.tomorrow.ui.tasks.TaskCreateScreen
+import com.example.tomorrow.ui.tasks.TaskListScreen
 import com.example.tomorrow.ui.theme.ThemeViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -15,6 +17,8 @@ object AuthRoutes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val PROFILE = "profile"
+    const val TASK_LIST = "taskList"
+    const val TASK_CREATE = "taskCreate"
 }
 
 @Composable
@@ -56,6 +60,19 @@ fun AuthNavigation(
                         popUpTo(0)
                     }
                 }
+            )
+        }
+        composable(AuthRoutes.TASK_LIST) {
+            TaskListScreen(
+                onCreateTaskClick = { navController.navigate(AuthRoutes.TASK_CREATE) },
+                onProfileClick = { navController.navigate(AuthRoutes.PROFILE) }
+            )
+        }
+
+        composable(AuthRoutes.TASK_CREATE) {
+            TaskCreateScreen(
+                onTaskCreated = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() }
             )
         }
     }

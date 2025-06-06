@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,9 +19,10 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
-    viewModel: TaskViewModel,
+    viewModel: TaskViewModel = viewModel(),
     onCreateTaskClick: () -> Unit,
-    onTaskClick: (Task) -> Unit = {}
+    onTaskClick: (Task) -> Unit = {},
+    onProfileClick: () -> Unit
 ) {
     val tasks by viewModel.tasks.collectAsState()
 
@@ -32,6 +34,19 @@ fun TaskListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Minhas Tarefas", style = MaterialTheme.typography.headlineMedium)
+            IconButton(onClick = onProfileClick) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Perfil"
+                )
+            }
+        }
         FilterSection(
             priorityFilter = priorityFilter,
             onPriorityChange = {
