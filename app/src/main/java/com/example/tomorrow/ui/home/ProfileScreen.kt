@@ -52,6 +52,12 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Voltar"
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Meu Perfil",
