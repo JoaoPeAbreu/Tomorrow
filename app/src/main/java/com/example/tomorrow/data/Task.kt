@@ -1,7 +1,9 @@
 package com.example.tomorrow.data
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import java.util.UUID
 
 @Entity(tableName = "tasks")

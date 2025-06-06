@@ -1,6 +1,5 @@
 package com.example.tomorrow.ui.tasks
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -8,19 +7,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tomorrow.data.Task
 import java.util.*
+import android.app.DatePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import java.util.Calendar
+import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCreateScreen(
     viewModel: TaskViewModel,
-    onTaskCreated: () -> Unit,  // Callback para navegar após salvar
-    userId: String = "mock-user" // Passe o userId real se tiver
+    onTaskCreated: () -> Unit,
+    onCancel: () -> Unit,          // callback para voltar/cancelar
+    userId: String = "mock-user"
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(2) } // Média por padrão
+    var deadlineMillis by remember { mutableStateOf<Long?>(null) }
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
 
     val isFormValid = title.isNotBlank()
+
+    fun openDatePicker() {
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(context, { _, y, m, d ->
+            calendar.set(y, m, d, 23, 59, 59)
+            calendar.set(Calendar.MILLISECOND, 999)
+            deadlineMillis = calendar.timeInMillis
+        }, year, month, day).show()
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -62,7 +82,35 @@ fun TaskCreateScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = deadlineMillis?.let {
+                    val date = Date(it)
+                    android.text.format.DateFormat.format("dd/MM/yyyy", date).toString()
+                } ?: "Sem data limite",
+                modifier = Modifier.weight(1f)
+            )
+            Button(onClick = { openDatePicker() }) {
+                Text("Selecionar Data Limite")
+            }
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
+
+        // Botão Voltar
+        OutlinedButton(
+            onClick = onCancel,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Voltar")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
@@ -71,12 +119,10 @@ fun TaskCreateScreen(
                     title = title.trim(),
                     description = description.trim(),
                     priority = priority,
-                    status = 0, // A Fazer por padrão
-                    userId = userId
+                    status = 0,
+                    userId = userId,
+                    deadlineMillis = deadlineMillis
                 )
-
-                Log.d("TaskCreate", "Tarefa criada: $newTask")
-
                 viewModel.addTask(newTask)
                 onTaskCreated()
             },

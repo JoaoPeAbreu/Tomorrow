@@ -1,20 +1,25 @@
 package com.example.tomorrow.ui.tasks
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tomorrow.data.Task
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
-    viewModel: TaskViewModel = viewModel(),
+    viewModel: TaskViewModel,
+    onCreateTaskClick: () -> Unit,
     onTaskClick: (Task) -> Unit = {}
 ) {
     val tasks by viewModel.tasks.collectAsState()
@@ -22,8 +27,11 @@ fun TaskListScreen(
     var priorityFilter by remember { mutableStateOf<Int?>(null) }
     var statusFilter by remember { mutableStateOf<Int?>(null) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         FilterSection(
             priorityFilter = priorityFilter,
             onPriorityChange = {
@@ -44,16 +52,54 @@ fun TaskListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Button(
+            onClick = onCreateTaskClick,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(bottom = 8.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Nova Tarefa")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Criar Tarefa")
+        }
+
         if (tasks.isEmpty()) {
             Text("Nenhuma tarefa encontrada", style = MaterialTheme.typography.bodyLarge)
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(tasks) { task ->
-                    TaskItemEditable(
-                        task = task,
-                        onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) },
-                        onTaskDelete = { taskToDelete -> viewModel.deleteTask(taskToDelete) }
-                    )
+                    val subtasks by viewModel.getSubTasksForTask(task.id).collectAsState(initial = emptyList())
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        task.deadlineMillis?.let { deadlineMillis ->
+                            val now = System.currentTimeMillis()
+                            val isExpired = deadlineMillis < now
+                            val formattedDeadline = remember(deadlineMillis) {
+                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                                    .format(Date(deadlineMillis))
+                            }
+                            Text(
+                                text = "Data limite: $formattedDeadline" + if (isExpired) " (expirada)" else "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+
+                        TaskItemEditable(
+                            task = task,
+                            subtasks = subtasks,
+                            onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) },
+                            onTaskDelete = { taskToDelete -> viewModel.deleteTask(taskToDelete) },
+                            onSubTaskUpdate = { updatedSubTask -> viewModel.updateSubTask(updatedSubTask) },
+                            onSubTaskCreate = { newSubTask -> viewModel.addSubTask(newSubTask) },
+                            onSubTaskDelete = { subTaskToDelete -> viewModel.deleteSubTask(subTaskToDelete) }
+                        )
+                    }
                 }
             }
         }
@@ -71,20 +117,32 @@ fun FilterSection(
     Column {
         Text("Filtros", style = MaterialTheme.typography.headlineSmall)
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             DropdownFilter(
                 label = "Prioridade",
-                options = listOf(null to "Todas", 1 to "Baixa", 2 to "Média", 3 to "Alta"),
+                options = listOf(
+                    null to "Todas",
+                    1 to "Baixa",
+                    2 to "Média",
+                    3 to "Alta"
+                ),
                 selectedOption = priorityFilter,
                 onOptionSelected = onPriorityChange
             )
 
             DropdownFilter(
                 label = "Status",
-                options = listOf(null to "Todos", 0 to "A Fazer", 1 to "Em Progresso", 2 to "Concluído"),
+                options = listOf(
+                    null to "Todos",
+                    0 to "Para fazer",
+                    1 to "Fazendo",
+                    2 to "Feita"
+                ),
                 selectedOption = statusFilter,
                 onOptionSelected = onStatusChange
             )
@@ -93,6 +151,7 @@ fun FilterSection(
                 Text("Limpar")
             }
         }
+
     }
 }
 
@@ -117,7 +176,6 @@ fun DropdownFilter(
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
-            modifier = Modifier.menuAnchor()
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -132,69 +190,6 @@ fun DropdownFilter(
                     }
                 )
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TaskItem(task: Task, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(task.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Prioridade: ${priorityLabel(task.priority)}")
-            Text("Status: ${statusLabel(task.status)}")
-        }
-    }
-}
-
-fun priorityLabel(priority: Int): String = when (priority) {
-    1 -> "Baixa"
-    2 -> "Média"
-    3 -> "Alta"
-    else -> "Desconhecida"
-}
-
-fun statusLabel(status: Int): String = when (status) {
-    0 -> "A Fazer"
-    1 -> "Em Progresso"
-    2 -> "Concluído"
-    else -> "Desconhecido"
-}
-
-@Composable
-fun MockTaskListScreen() {
-    val fakeTasks = listOf(
-        Task(
-            title = "Estudar Compose",
-            description = "Ver os fundamentos de Jetpack Compose",
-            priority = 2,
-            status = 0
-        ),
-        Task(
-            title = "Trabalhar no projeto",
-            description = "Avançar no app de tarefas",
-            priority = 3,
-            status = 1
-        ),
-        Task(
-            title = "Enviar relatório",
-            description = "Relatório de atividades",
-            priority = 1,
-            status = 2
-        )
-    )
-
-    LazyColumn {
-        items(fakeTasks) { task ->
-            TaskItem(task = task, onClick = {})
         }
     }
 }
