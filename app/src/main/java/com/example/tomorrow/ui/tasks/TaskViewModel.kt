@@ -10,6 +10,10 @@ import kotlinx.coroutines.launch
 
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
+    fun searchTasks(query: String): Flow<List<Task>> {
+        return repository.searchTasks(query)
+    }
+
     // Tasks
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
@@ -151,4 +155,3 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
     }
 
 }
-

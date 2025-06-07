@@ -6,12 +6,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tomorrow.data.Task
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,11 +24,12 @@ fun TaskListScreen(
     onTaskClick: (Task) -> Unit = {},
     onProfileClick: () -> Unit
 ) {
-    val tasks by viewModel.tasks.collectAsState()
+    var query by remember { mutableStateOf("") }
+
+    val tasks by viewModel.searchTasks(query).collectAsState(initial = emptyList())
 
     var priorityFilter by remember { mutableStateOf<Int?>(null) }
     var statusFilter by remember { mutableStateOf<Int?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,6 +48,26 @@ fun TaskListScreen(
                 )
             }
         }
+        OutlinedTextField(
+            value = query,
+            onValueChange = {
+                query = it
+                viewModel.searchTasks(it)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    modifier = Modifier.size(24.dp)
+                )
+            },
+            label = { Text("Buscar tarefas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            shape = MaterialTheme.shapes.small,
+            singleLine = true,
+        )
         FilterSection(
             priorityFilter = priorityFilter,
             onPriorityChange = {
@@ -99,7 +120,7 @@ fun TaskListScreen(
                             }
                             Text(
                                 text = "Data limite: $formattedDeadline" + if (isExpired) " (expirada)" else "",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = if (isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -208,4 +229,3 @@ fun DropdownFilter(
         }
     }
 }
-
