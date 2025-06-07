@@ -46,8 +46,8 @@ fun AuthNavigation(
             RegisterScreen(
                 onBackClick = { navController.popBackStack() },
                 onRegisterSuccess = {
-                    navController.navigate(AuthRoutes.PROFILE) {
-                        popUpTo(AuthRoutes.LOGIN) { inclusive = true }
+                    navController.navigate(AuthRoutes.LOGIN) {
+                        popUpTo(0)
                     }
                 }
             )
