@@ -69,6 +69,7 @@ fun RegisterScreen(
             value = viewModel.name,
             label = { Text("Nome") },
             onValueChange = { input -> viewModel.name = input },
+            singleLine = true,
             isError = viewModel.nameHasErrors,
             supportingText = {
                 if (viewModel.nameHasErrors) {
@@ -83,6 +84,7 @@ fun RegisterScreen(
             value = viewModel.email,
             label = { Text("Email") },
             onValueChange = { input -> viewModel.email = input },
+            singleLine = true,
             isError = viewModel.emailHasErrors,
             supportingText = {
                 if (viewModel.emailHasErrors) {
@@ -96,6 +98,7 @@ fun RegisterScreen(
             value = viewModel.password,
             label = { Text("Senha") },
             onValueChange = { input -> viewModel.password = input },
+            singleLine = true,
             isError = viewModel.passwordHasErrors,
             supportingText = {
                 if (viewModel.passwordHasErrors) {
@@ -137,6 +140,7 @@ fun RegisterScreen(
             value = viewModel.confirmpassword,
             label = { Text("Confirme a senha") },
             onValueChange = { input -> viewModel.confirmpassword = input },
+            singleLine = true,
             isError = viewModel.confirmPasswordHasErrors,
             supportingText = {
                 if (viewModel.confirmPasswordHasErrors) {
