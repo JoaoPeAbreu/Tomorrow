@@ -34,6 +34,8 @@ class TaskRepository(
     fun getSubTasksForTask(taskId: String): Flow<List<SubTask>> =
         subTaskDao.getSubTasksByTaskId(taskId)
 
+    fun searchTasks(query: String): Flow<List<Task>> = taskDao.searchTasks(query)
+
     suspend fun addSubTask(subTask: SubTask) =
         subTaskDao.insertSubTask(subTask)
 

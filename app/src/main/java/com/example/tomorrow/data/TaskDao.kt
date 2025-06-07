@@ -30,5 +30,7 @@ interface TaskDao {
     """)
     fun getTasksOrderedByCompletion(userId: String): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE title LIKE '%' || :query || '%'")
+    fun searchTasks(query: String): Flow<List<Task>>
 }
 
