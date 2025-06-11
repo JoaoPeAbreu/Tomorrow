@@ -55,6 +55,7 @@ fun LoginScreen(
             value = viewModel.email,
             label = { Text("Email") },
             onValueChange = { input -> viewModel.email = input },
+            singleLine = true,
             isError = viewModel.emailHasErrors,
             supportingText = {
                 if (viewModel.emailHasErrors) {
@@ -68,6 +69,7 @@ fun LoginScreen(
             value = viewModel.password,
             label = { Text("Senha") },
             onValueChange = { input -> viewModel.password = input },
+            singleLine = true,
             isError = viewModel.passwordHasErrors,
             supportingText = {
                 if (viewModel.passwordHasErrors) {
