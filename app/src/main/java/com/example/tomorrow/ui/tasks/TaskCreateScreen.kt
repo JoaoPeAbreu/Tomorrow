@@ -17,8 +17,7 @@ import androidx.compose.ui.Alignment
 fun TaskCreateScreen(
     viewModel: TaskViewModel,
     onTaskCreated: () -> Unit,
-    onCancel: () -> Unit,          // callback para voltar/cancelar
-    userId: String = "mock-user"
+    onCancel: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -120,7 +119,7 @@ fun TaskCreateScreen(
                     description = description.trim(),
                     priority = priority,
                     status = 0,
-                    userId = userId,
+                    userId = viewModel.getUserId(),
                     deadlineMillis = deadlineMillis
                 )
                 viewModel.addTask(newTask)

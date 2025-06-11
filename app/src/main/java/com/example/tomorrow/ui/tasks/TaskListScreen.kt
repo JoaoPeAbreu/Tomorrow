@@ -159,29 +159,33 @@ fun FilterSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DropdownFilter(
-                label = "Prioridade",
-                options = listOf(
-                    null to "Todas",
-                    1 to "Baixa",
-                    2 to "Média",
-                    3 to "Alta"
-                ),
-                selectedOption = priorityFilter,
-                onOptionSelected = onPriorityChange
-            )
+            Box(modifier = Modifier.weight(1f)) {
+                DropdownFilter(
+                    label = "Prioridade",
+                    options = listOf(
+                        null to "Todas",
+                        1 to "Baixa",
+                        2 to "Média",
+                        3 to "Alta"
+                    ),
+                    selectedOption = priorityFilter,
+                    onOptionSelected = onPriorityChange
+                )
+            }
 
-            DropdownFilter(
-                label = "Status",
-                options = listOf(
-                    null to "Todos",
-                    0 to "Para fazer",
-                    1 to "Fazendo",
-                    2 to "Feita"
-                ),
-                selectedOption = statusFilter,
-                onOptionSelected = onStatusChange
-            )
+            Box(modifier = Modifier.weight(1f)) {
+                DropdownFilter(
+                    label = "Status",
+                    options = listOf(
+                        null to "Todos",
+                        0 to "Para fazer",
+                        1 to "Fazendo",
+                        2 to "Feita"
+                    ),
+                    selectedOption = statusFilter,
+                    onOptionSelected = onStatusChange
+                )
+            }
 
             Button(onClick = onClearFilters) {
                 Text("Limpar")
