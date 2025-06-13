@@ -392,4 +392,3 @@ fun statusLabel(status: Int): String = when(status) {
     2 -> "Feita"
     else -> "Desconhecido"
 }
-

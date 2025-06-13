@@ -4,7 +4,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -80,11 +79,6 @@ fun TaskListScreen(
             onStatusChange = {
                 statusFilter = it
                 viewModel.setStatusFilter(it)
-            },
-            onClearFilters = {
-                priorityFilter = null
-                statusFilter = null
-                viewModel.clearFilters()
             }
         )
 
@@ -160,7 +154,6 @@ fun FilterSection(
     onPriorityChange: (Int?) -> Unit,
     statusFilter: Int?,
     onStatusChange: (Int?) -> Unit,
-    onClearFilters: () -> Unit
 ) {
     Column {
         Text("Filtros", style = MaterialTheme.typography.headlineSmall)
@@ -197,10 +190,6 @@ fun FilterSection(
                     selectedOption = statusFilter,
                     onOptionSelected = onStatusChange
                 )
-            }
-
-            Button(onClick = onClearFilters) {
-                Text("Limpar")
             }
         }
 
