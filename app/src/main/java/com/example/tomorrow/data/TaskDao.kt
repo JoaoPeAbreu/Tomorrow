@@ -25,8 +25,9 @@ interface TaskDao {
     SELECT * FROM tasks
     WHERE userId = :userId
     ORDER BY 
-        CASE WHEN completedAtMillis IS NULL THEN 1 ELSE 0 END,
-        completedAtMillis
+        CASE WHEN completedAtMillis IS NULL THEN 0 ELSE 1 END,
+        deadlineMillis ASC,
+        title ASC
     """)
     fun getTasksOrderedByCompletion(userId: String): Flow<List<Task>>
 
