@@ -192,7 +192,6 @@ fun TaskItemEditable(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Descrição: ${task.description}")
             Text("Prioridade: ${priorityLabel(task.priority)}")
             Text("Status: ${statusLabel(task.status)}")
 
