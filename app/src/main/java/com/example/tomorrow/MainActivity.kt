@@ -16,7 +16,6 @@ import com.example.tomorrow.ui.tasks.TaskViewModel
 import com.example.tomorrow.ui.tasks.TaskViewModelFactory
 import com.example.tomorrow.ui.theme.ThemeViewModel
 import com.example.tomorrow.ui.theme.TomorrowTheme
-import com.google.firebase.auth.FirebaseAuth
 
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +24,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val themeViewModel: ThemeViewModel = viewModel()
-            val auth = FirebaseAuth.getInstance()
             val db = UserDatabase.getInstance(applicationContext)
             val repository = TaskRepository(db.taskDao(), db.subTaskDao())
             val taskViewModel: TaskViewModel = viewModel(

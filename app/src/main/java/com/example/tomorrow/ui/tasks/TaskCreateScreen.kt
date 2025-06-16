@@ -11,15 +11,13 @@ import android.app.DatePickerDialog
 import androidx.compose.ui.platform.LocalContext
 import java.util.Calendar
 import androidx.compose.ui.Alignment
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCreateScreen(
     viewModel: TaskViewModel,
     onTaskCreated: () -> Unit,
-    onCancel: () -> Unit,          // callback para voltar/cancelar
-    userId: String = "mock-user"
+    onCancel: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -36,11 +34,14 @@ fun TaskCreateScreen(
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        DatePickerDialog(context, { _, y, m, d ->
+        val datePickerDialog = DatePickerDialog(context, { _, y, m, d ->
             calendar.set(y, m, d, 23, 59, 59)
             calendar.set(Calendar.MILLISECOND, 999)
             deadlineMillis = calendar.timeInMillis
-        }, year, month, day).show()
+        }, year, month, day)
+
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+        datePickerDialog.show()
     }
 
     Column(modifier = Modifier
@@ -121,7 +122,7 @@ fun TaskCreateScreen(
                     description = description.trim(),
                     priority = priority,
                     status = 0,
-                    userId = userId,
+                    userId = viewModel.getUserId(),
                     deadlineMillis = deadlineMillis
                 )
                 viewModel.addTask(newTask)
