@@ -1,17 +1,20 @@
 package com.example.tomorrow.ui.tasks
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.example.tomorrow.data.SubTask
 import com.example.tomorrow.data.Task
+import java.util.*
 
 @Composable
 fun TaskItemEditable(
@@ -25,7 +28,13 @@ fun TaskItemEditable(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedTitle by remember { mutableStateOf(task.title) }
-    var newSubTaskTitle by remember { mutableStateOf("") }
+    var editedDescription by remember { mutableStateOf(task.description) }
+    var editedPriority by remember { mutableStateOf(task.priority) }
+    var editedStatus by remember { mutableStateOf(task.status) }
+    var editedDeadline by remember { mutableStateOf(task.deadlineMillis) }
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
 
     Card(
         modifier = Modifier
@@ -34,7 +43,6 @@ fun TaskItemEditable(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Linha principal: checkbox, título, botões editar/deletar
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -69,25 +77,110 @@ fun TaskItemEditable(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 if (isEditing) {
-                    TextField(
-                        value = editedTitle,
-                        onValueChange = { editedTitle = it },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyLarge
-                    )
-                    IconButton(onClick = {
-                        onTaskUpdate(task.copy(title = editedTitle))
-                        isEditing = false
-                    }) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = "Salvar")
+                    Column(modifier = Modifier.weight(1f)) {
+                        TextField(
+                            value = editedTitle,
+                            onValueChange = { editedTitle = it },
+                            label = { Text("Título") },
+                            singleLine = true
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        TextField(
+                            value = editedDescription,
+                            onValueChange = { editedDescription = it },
+                            label = { Text("Descrição") },
+                            maxLines = 3
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text("Prioridade:")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(1 to "Baixa", 2 to "Média", 3 to "Alta").forEach { (value, label) ->
+                                FilterChip(
+                                    selected = editedPriority == value,
+                                    onClick = { editedPriority = value },
+                                    label = { Text(label) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text("Status:")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(0 to "Para Fazer", 1 to "Fazendo", 2 to "Feita").forEach { (value, label) ->
+                                FilterChip(
+                                    selected = editedStatus == value,
+                                    onClick = { editedStatus = value },
+                                    label = { Text(label) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = editedDeadline?.let {
+                                    val date = Date(it)
+                                    android.text.format.DateFormat.format("dd/MM/yyyy", date).toString()
+                                } ?: "Sem data limite",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Button(onClick = {
+                                val year = calendar.get(Calendar.YEAR)
+                                val month = calendar.get(Calendar.MONTH)
+                                val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                                DatePickerDialog(context, { _, y, m, d ->
+                                    calendar.set(y, m, d, 23, 59, 59)
+                                    calendar.set(Calendar.MILLISECOND, 999)
+                                    editedDeadline = calendar.timeInMillis
+                                }, year, month, day).show()
+                            }) {
+                                Text("Data Limite")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(onClick = {
+                            onTaskUpdate(
+                                task.copy(
+                                    title = editedTitle,
+                                    description = editedDescription,
+                                    priority = editedPriority,
+                                    status = editedStatus,
+                                    deadlineMillis = editedDeadline
+                                )
+                            )
+                            isEditing = false
+                        }) {
+                            Icon(Icons.Default.Check, contentDescription = "Salvar")
+                            Text("Salvar")
+                        }
                     }
                 } else {
-                    Text(
-                        text = task.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = task.title,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        if (!task.description.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = task.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
                     IconButton(onClick = { isEditing = true }) {
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar")
                     }
@@ -102,7 +195,6 @@ fun TaskItemEditable(
             Text("Prioridade: ${priorityLabel(task.priority)}")
             Text("Status: ${statusLabel(task.status)}")
 
-            // Controles de tempo
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 8.dp)
@@ -170,7 +262,6 @@ fun TaskItemEditable(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Seção de subtasks
             SubTaskList(
                 taskId = task.id,
                 subTasks = subtasks,
