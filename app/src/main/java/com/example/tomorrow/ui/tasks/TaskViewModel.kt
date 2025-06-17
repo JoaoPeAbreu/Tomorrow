@@ -26,6 +26,12 @@ class TaskViewModel(private val repository: TaskRepository, private val context:
         _query.value = newQuery
     }
 
+    private val _query = MutableStateFlow("")
+
+    fun setQuery(newQuery: String) {
+        _query.value = newQuery
+    }
+
     // Tasks
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
