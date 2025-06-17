@@ -26,6 +26,7 @@ data class Task(
 
     val isPaused: Boolean = false,
     val totalDurationMillis: Long = 0L,
-    val deadlineMillis: Long? = null
+    val deadlineMillis: Long? = null,
+    val notificationShown: Boolean = false
 )
 
