@@ -35,13 +35,15 @@ fun TaskListScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .padding(top = 40.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Minhas Tarefas", style = MaterialTheme.typography.headlineMedium)
+            Text("Minhas Tarefas",
+                style = MaterialTheme.typography.headlineMedium)
             IconButton(onClick = onProfileClick) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,

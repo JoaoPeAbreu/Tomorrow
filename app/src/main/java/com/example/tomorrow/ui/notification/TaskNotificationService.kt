@@ -33,7 +33,7 @@ class TaskNotificationService(private val context: Context) {
         )
 
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_background) // Required for Android 8.0+
+            .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("O prazo da sua tarefa está chegando ao fim!")
             .setContentText("'${task.title}' irá terminar amanhã! Termine antes da data expirar!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

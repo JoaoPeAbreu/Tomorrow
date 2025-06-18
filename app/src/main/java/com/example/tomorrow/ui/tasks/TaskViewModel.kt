@@ -26,21 +26,15 @@ class TaskViewModel(private val repository: TaskRepository, private val context:
         _query.value = newQuery
     }
 
-    // Tasks
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-    // Subtasks agrupadas por taskId
     private val _subTasksMap = MutableStateFlow<Map<String, List<SubTask>>>(emptyMap())
     val subTasksMap: StateFlow<Map<String, List<SubTask>>> = _subTasksMap.asStateFlow()
 
-    // Filtros
     private val _priorityFilter = MutableStateFlow<Int?>(null)
     private val _statusFilter = MutableStateFlow<Int?>(null)
 
-    private val userId = "mock-user" // Ajuste conforme seu fluxo real de usuário
-
-    // Para controlar observações das subtasks e evitar duplicidade
     private val observedTaskIds = mutableSetOf<String>()
 
     private val auth: FirebaseAuth = Firebase.auth
@@ -111,13 +105,11 @@ class TaskViewModel(private val repository: TaskRepository, private val context:
         }
     }
 
-    // Permite coletar subtasks para uma taskId específica
     fun getSubTasksForTask(taskId: String): StateFlow<List<SubTask>> {
         return subTasksMap.map { map -> map[taskId] ?: emptyList() }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     }
 
-    // Filtros
     fun setPriorityFilter(priority: Int?) { _priorityFilter.value = priority }
     fun setStatusFilter(status: Int?) { _statusFilter.value = status }
     fun clearFilters() {
@@ -150,17 +142,18 @@ class TaskViewModel(private val repository: TaskRepository, private val context:
         observedTaskIds.remove(task.id)
     }
     private fun checkDeadlines(task: Task) {
-        task.deadlineMillis?.let { deadline ->
-            val tomorrow = System.currentTimeMillis() + 24 * 60 * 60 * 1000L
-            val formattedTomorrow = SimpleDateFormat("dd/MM/yyy").format(Date(tomorrow))
-            val formattedDeadline = SimpleDateFormat("dd/MM/yyy").format(Date(deadline))
+        if(task.allowNotification) {
+            task.deadlineMillis?.let { deadline ->
+                val tomorrow = System.currentTimeMillis() + 24 * 60 * 60 * 1000L
+                val formattedTomorrow = SimpleDateFormat("dd/MM/yyy").format(Date(tomorrow))
+                val formattedDeadline = SimpleDateFormat("dd/MM/yyy").format(Date(deadline))
 
-            // Check if deadline is within next 24 hours
-            if (formattedTomorrow == formattedDeadline) {
-                if (!task.notificationShown) {
-                    notificationService.showTaskNotification(task)
-                    viewModelScope.launch {
-                        repository.updateTask(task.copy(notificationShown = true))
+                if (formattedTomorrow == formattedDeadline) {
+                    if (!task.notificationShown) {
+                        notificationService.showTaskNotification(task)
+                        viewModelScope.launch {
+                            repository.updateTask(task.copy(notificationShown = true))
+                        }
                     }
                 }
             }

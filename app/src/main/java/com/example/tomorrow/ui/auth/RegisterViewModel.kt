@@ -141,11 +141,6 @@ class RegisterViewModel() : ViewModel() {
         }
     }
 
-    /*fun resetState() {
-        _uiState.update { RegistrationUiState() } // Reset to initial state
-    }*/
-    // Adicione esta função ao RegisterViewModel
-
     fun logout() {
         auth.signOut()
     }
