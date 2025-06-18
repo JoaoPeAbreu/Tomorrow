@@ -18,7 +18,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tomorrow.ui.auth.RegisterViewModel
 import com.example.tomorrow.ui.theme.ColorTheme
 import com.example.tomorrow.ui.theme.ThemeViewModel
 

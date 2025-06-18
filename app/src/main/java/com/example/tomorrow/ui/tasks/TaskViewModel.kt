@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository, private val context: Context) : ViewModel() {
@@ -113,10 +112,7 @@ class TaskViewModel(private val repository: TaskRepository, private val context:
 
     fun setPriorityFilter(priority: Int?) { _priorityFilter.value = priority }
     fun setStatusFilter(status: Int?) { _statusFilter.value = status }
-    fun clearFilters() {
-        _priorityFilter.value = null
-        _statusFilter.value = null
-    }
+
 
     // Tasks
     fun updateTask(updatedTask: Task) = viewModelScope.launch {

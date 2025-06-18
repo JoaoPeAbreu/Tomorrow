@@ -136,9 +136,5 @@ class LoginViewModel() : ViewModel() {
             }
         }
     }
-
-    /*fun resetState() {
-        _uiState.update { RegistrationUiState() } // Reset to initial state
-    }*/
 }
 

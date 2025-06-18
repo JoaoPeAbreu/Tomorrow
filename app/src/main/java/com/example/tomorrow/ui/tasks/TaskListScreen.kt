@@ -24,7 +24,6 @@ import java.util.*
 fun TaskListScreen(
     viewModel: TaskViewModel,
     onCreateTaskClick: () -> Unit,
-    onTaskClick: (Task) -> Unit = {},
     onProfileClick: () -> Unit
 ) {
     var query by remember { mutableStateOf("") }

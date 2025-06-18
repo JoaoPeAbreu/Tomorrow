@@ -180,7 +180,7 @@ fun RegisterScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(onClick = { viewModel.registerUser(onRegisterSuccess) },
-            enabled = !uiState.isLoading && viewModel.noErrosRegister,
+            enabled = !uiState.isLoading && viewModel.noErrosRegister && !viewModel.isBlank,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (uiState.isLoading) "Carregando..." else "Cadastre-se")
