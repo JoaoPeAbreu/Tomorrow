@@ -108,7 +108,7 @@ fun LoginScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(onClick = { viewModel.loginUser(onLoginSuccess) },
-            enabled = !uiState.isLoading && viewModel.noErrosRegister && !uiState.alreadyLogged,
+            enabled = !uiState.isLoading && viewModel.enableButton && !uiState.alreadyLogged,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (uiState.isLoading) "Carregando..." else "Login")

@@ -21,13 +21,14 @@ fun TaskCreateScreen(
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf(2) } // Média por padrão
+    var priority by remember { mutableStateOf(2) }
     var deadlineMillis by remember { mutableStateOf<Long?>(null) }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
     val isFormValid = title.isNotBlank()
+    var allowNotification by remember { mutableStateOf(false) }
 
     fun openDatePicker() {
         val year = calendar.get(Calendar.YEAR)
@@ -47,6 +48,7 @@ fun TaskCreateScreen(
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)
+        .padding(top = 40.dp)
     ) {
         Text("Nova Tarefa", style = MaterialTheme.typography.headlineMedium)
 
@@ -102,9 +104,22 @@ fun TaskCreateScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Habilitar notificação")
+            Switch(
+                checked = allowNotification,
+                onCheckedChange = { allowNotification = it }
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botão Voltar
         OutlinedButton(
             onClick = onCancel,
             modifier = Modifier.fillMaxWidth()
@@ -123,7 +138,8 @@ fun TaskCreateScreen(
                     priority = priority,
                     status = 0,
                     userId = viewModel.getUserId(),
-                    deadlineMillis = deadlineMillis
+                    deadlineMillis = deadlineMillis,
+                    allowNotification = allowNotification
                 )
                 viewModel.addTask(newTask)
                 onTaskCreated()

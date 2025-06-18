@@ -54,6 +54,14 @@ class LoginViewModel() : ViewModel() {
             true
         } else false
     }
+
+    val isBlank by derivedStateOf {
+        if(email.isNotBlank() && password.isNotBlank()) false else true
+    }
+
+    val enableButton by derivedStateOf {
+        if(noErrosRegister && !isBlank) true else false
+    }
     fun loginUser(onSuccess: () -> Unit) {
 
         if (currentUser != null) {

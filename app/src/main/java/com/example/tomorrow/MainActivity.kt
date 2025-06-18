@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
             val db = UserDatabase.getInstance(applicationContext)
             val repository = TaskRepository(db.taskDao(), db.subTaskDao())
             val taskViewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(repository)
+                factory = TaskViewModelFactory(repository, this)
             )
 
             themeViewModel.InitializeTheme()
