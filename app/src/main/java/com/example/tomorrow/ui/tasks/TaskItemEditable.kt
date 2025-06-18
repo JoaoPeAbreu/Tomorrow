@@ -121,12 +121,11 @@ fun TaskItemEditable(
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(1 to "Baixa", 2 to "Média", 3 to "Alta").forEach { (value, label) ->
-                            FilterChip(
-                                selected = editedPriority == value,
-                                onClick = { editedPriority = value },
-                                label = { Text(label) }
-                            )
-                        }
+                        FilterChip(
+                            selected = editedPriority == value,
+                            onClick = { editedPriority = value },
+                            label = { Text(label) }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -183,9 +182,18 @@ fun TaskItemEditable(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            isEditing = false
+                    Button(onClick = {
+                        onTaskUpdate(
+                            task.copy(
+                                title = editedTitle,
+                                description = editedDescription,
+                                priority = editedPriority,
+                                status = editedStatus,
+                                deadlineMillis = editedDeadline,
+                                allowNotification = editedallowNotification
+                            )
+                        )
+                        isEditing = false
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
