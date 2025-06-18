@@ -1,19 +1,24 @@
 package com.example.tomorrow.ui.tasks
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tomorrow.data.SubTask
 import com.example.tomorrow.data.Task
 import com.example.tomorrow.data.TaskRepository
+import com.example.tomorrow.notification.TaskNotificationService
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
+class TaskViewModel(private val repository: TaskRepository, private val context: Context) : ViewModel() {
 
     private val _query = MutableStateFlow("")
 
@@ -21,7 +26,6 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         _query.value = newQuery
     }
 
-    // Tasks
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
@@ -29,18 +33,16 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
     private val _subTasksMap = MutableStateFlow<Map<String, List<SubTask>>>(emptyMap())
     val subTasksMap: StateFlow<Map<String, List<SubTask>>> = _subTasksMap.asStateFlow()
 
-    // Filtros
     private val _priorityFilter = MutableStateFlow<Int?>(null)
     private val _statusFilter = MutableStateFlow<Int?>(null)
 
-    private val userId = "mock-user" // Ajuste conforme seu fluxo real de usuário
-
-    // Para controlar observações das subtasks e evitar duplicidade
     private val observedTaskIds = mutableSetOf<String>()
 
     private val auth: FirebaseAuth = Firebase.auth
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
+    private val notificationService by lazy { TaskNotificationService(context) }
 
     init {
         auth.addAuthStateListener { firebaseAuth ->
@@ -80,6 +82,12 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 taskIdsToObserve.forEach { taskId ->
                     observeSubTasksForTask(taskId)
                 }
+
+                val notifyUsers = filteredTasks
+                notifyUsers.forEach {task ->
+                    checkDeadlines(task)
+                }
+
             }
         }
     }
@@ -98,13 +106,11 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         }
     }
 
-    // Permite coletar subtasks para uma taskId específica
     fun getSubTasksForTask(taskId: String): StateFlow<List<SubTask>> {
         return subTasksMap.map { map -> map[taskId] ?: emptyList() }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     }
 
-    // Filtros
     fun setPriorityFilter(priority: Int?) { _priorityFilter.value = priority }
     fun setStatusFilter(status: Int?) { _statusFilter.value = status }
     fun clearFilters() {
@@ -135,6 +141,24 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         newMap.remove(task.id)
         _subTasksMap.value = newMap
         observedTaskIds.remove(task.id)
+    }
+    private fun checkDeadlines(task: Task) {
+        if(task.allowNotification) {
+            task.deadlineMillis?.let { deadline ->
+                val tomorrow = System.currentTimeMillis() + 24 * 60 * 60 * 1000L
+                val formattedTomorrow = SimpleDateFormat("dd/MM/yyy").format(Date(tomorrow))
+                val formattedDeadline = SimpleDateFormat("dd/MM/yyy").format(Date(deadline))
+
+                if (formattedTomorrow == formattedDeadline) {
+                    if (!task.notificationShown) {
+                        notificationService.showTaskNotification(task)
+                        viewModelScope.launch {
+                            repository.updateTask(task.copy(notificationShown = true))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Subtasks
