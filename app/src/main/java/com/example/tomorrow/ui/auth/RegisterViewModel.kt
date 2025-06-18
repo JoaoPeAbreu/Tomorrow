@@ -28,7 +28,6 @@ data class RegistrationUiState(
 class RegisterViewModel() : ViewModel() {
 
     private val auth: FirebaseAuth = Firebase.auth
-    val currentUser = auth.currentUser
 
     private val _uiState = MutableStateFlow(RegistrationUiState())
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
@@ -140,15 +139,5 @@ class RegisterViewModel() : ViewModel() {
             }
         }
     }
-
-    /*fun resetState() {
-        _uiState.update { RegistrationUiState() } // Reset to initial state
-    }*/
-    // Adicione esta função ao RegisterViewModel
-
-    fun logout() {
-        auth.signOut()
-    }
-
 }
 

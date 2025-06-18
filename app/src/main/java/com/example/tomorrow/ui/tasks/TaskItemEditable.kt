@@ -32,20 +32,21 @@ fun TaskItemEditable(
     var editedPriority by remember { mutableStateOf(task.priority) }
     var editedStatus by remember { mutableStateOf(task.status) }
     var editedDeadline by remember { mutableStateOf(task.deadlineMillis) }
+    var editedallowNotification by remember { mutableStateOf(task.allowNotification) }
+
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(vertical = 8.dp, horizontal = 8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = task.status == 2,
                     onCheckedChange = { checked ->
@@ -59,8 +60,8 @@ fun TaskItemEditable(
                                 startedAtMillis = null,
                                 completedAtMillis = now,
                                 isPaused = false,
-                                totalDurationMillis = task.totalDurationMillis + elapsed
-                            )
+                                totalDurationMillis = task.totalDurationMillis + elapsed)
+
                         } else {
                             task.copy(
                                 status = 0,
@@ -76,143 +77,146 @@ fun TaskItemEditable(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                if (isEditing) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        TextField(
-                            value = editedTitle,
-                            onValueChange = { editedTitle = it },
-                            label = { Text("Título") },
-                            singleLine = true
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        TextField(
-                            value = editedDescription,
-                            onValueChange = { editedDescription = it },
-                            label = { Text("Descrição") },
-                            maxLines = 3
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text("Prioridade:")
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf(1 to "Baixa", 2 to "Média", 3 to "Alta").forEach { (value, label) ->
-                                FilterChip(
-                                    selected = editedPriority == value,
-                                    onClick = { editedPriority = value },
-                                    label = { Text(label) }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text("Status:")
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf(0 to "Para Fazer", 1 to "Fazendo", 2 to "Feita").forEach { (value, label) ->
-                                FilterChip(
-                                    selected = editedStatus == value,
-                                    onClick = { editedStatus = value },
-                                    label = { Text(label) }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = editedDeadline?.let {
-                                    val date = Date(it)
-                                    android.text.format.DateFormat.format("dd/MM/yyyy", date).toString()
-                                } ?: "Sem data limite",
-                                modifier = Modifier.weight(1f)
-                            )
-                            Button(onClick = {
-                                val year = calendar.get(Calendar.YEAR)
-                                val month = calendar.get(Calendar.MONTH)
-                                val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-                                DatePickerDialog(context, { _, y, m, d ->
-                                    calendar.set(y, m, d, 23, 59, 59)
-                                    calendar.set(Calendar.MILLISECOND, 999)
-                                    editedDeadline = calendar.timeInMillis
-                                }, year, month, day).show()
-                            }) {
-                                Text("Data Limite")
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(onClick = {
-                            onTaskUpdate(
-                                task.copy(
-                                    title = editedTitle,
-                                    description = editedDescription,
-                                    priority = editedPriority,
-                                    status = editedStatus,
-                                    deadlineMillis = editedDeadline
-                                )
-                            )
-                            isEditing = false
-                        }) {
-                            Icon(Icons.Default.Check, contentDescription = "Salvar")
-                            Text("Salvar")
-                        }
-                    }
-                } else {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = task.title,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        if (!task.description.isNullOrBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = task.description,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-
-                    IconButton(onClick = { isEditing = true }) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar")
-                    }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = task.title,
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 }
 
+                IconButton(onClick = { isEditing = true }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Editar")
+                }
                 IconButton(onClick = { onTaskDelete(task) }) {
                     Icon(Icons.Default.Delete, contentDescription = "Deletar")
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Prioridade: ${priorityLabel(task.priority)}")
-            Text("Status: ${statusLabel(task.status)}")
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider()
+
+            if (isEditing) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    TextField(
+                        value = editedTitle,
+                        onValueChange = { editedTitle = it },
+                        label = { Text("Título") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextField(
+                        value = editedDescription,
+                        onValueChange = { editedDescription = it },
+                        label = { Text("Descrição") },
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Prioridade", style = MaterialTheme.typography.labelLarge)
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(1 to "Baixa", 2 to "Média", 3 to "Alta").forEach { (value, label) ->
+                            FilterChip(
+                                selected = editedPriority == value,
+                                onClick = { editedPriority = value },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Status", style = MaterialTheme.typography.labelLarge)
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(0 to "Para Fazer", 1 to "Fazendo", 2 to "Feita").forEach { (value, label) ->
+                            FilterChip(
+                                selected = editedStatus == value,
+                                onClick = { editedStatus = value },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = editedDeadline?.let {
+                                val date = Date(it)
+                                android.text.format.DateFormat.format("dd/MM/yyyy", date).toString()
+                            } ?: "Sem data limite",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = {
+                            val year = calendar.get(Calendar.YEAR)
+                            val month = calendar.get(Calendar.MONTH)
+                            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                            DatePickerDialog(context, { _, y, m, d ->
+                                calendar.set(y, m, d, 23, 59, 59)
+                                calendar.set(Calendar.MILLISECOND, 999)
+                                editedDeadline = calendar.timeInMillis
+                            }, year, month, day).show()
+                        }) {
+                            Text("Data Limite")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Habilitar notificação")
+                        Switch(
+                            checked = editedallowNotification,
+                            onCheckedChange = { editedallowNotification = it }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            isEditing = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = "Salvar")
+                        Spacer(Modifier.width(4.dp))
+                        Text("Salvar")
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Descrição: ${task.description}")
+                Text("Prioridade: ${priorityLabel(task.priority)}")
+                Text("Status: ${statusLabel(task.status)}")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Divider()
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 8.dp)
             ) {
                 when (task.status) {
-                    0 -> {
-                        Button(onClick = {
-                            val now = System.currentTimeMillis()
-                            onTaskUpdate(task.copy(
-                                status = 1,
-                                startedAtMillis = now,
-                                isPaused = false
-                            ))
-                        }) {
-                            Text("Iniciar")
-                        }
-                    }
-
+                    0 -> Button(onClick = {
+                        val now = System.currentTimeMillis()
+                        onTaskUpdate(task.copy(
+                            status = 1,
+                            startedAtMillis = now,
+                            isPaused = false
+                        ))
+                     }) { Text("Iniciar") }
                     1 -> {
                         if (task.isPaused) {
                             Button(onClick = {
@@ -221,9 +225,7 @@ fun TaskItemEditable(
                                     startedAtMillis = now,
                                     isPaused = false
                                 ))
-                            }) {
-                                Text("Retomar")
-                            }
+                            }) { Text("Retomar") }
                         } else {
                             Button(onClick = {
                                 val now = System.currentTimeMillis()
@@ -233,10 +235,7 @@ fun TaskItemEditable(
                                     isPaused = true,
                                     totalDurationMillis = task.totalDurationMillis + elapsed
                                 ))
-                            }) {
-                                Text("Pausar")
-                            }
-
+                            }) { Text("Pausar") }
                             Button(onClick = {
                                 val now = System.currentTimeMillis()
                                 val elapsed = now - (task.startedAtMillis ?: now)
@@ -247,12 +246,9 @@ fun TaskItemEditable(
                                     isPaused = false,
                                     totalDurationMillis = task.totalDurationMillis + elapsed
                                 ))
-                            }) {
-                                Text("Concluir")
-                            }
+                            }) { Text("Concluir") }
                         }
                     }
-
                     2 -> {
                         val totalMinutes = task.totalDurationMillis / 60000
                         Text("Tempo total: $totalMinutes min")
@@ -271,6 +267,7 @@ fun TaskItemEditable(
             )
         }
     }
+
 }
 
 @Composable

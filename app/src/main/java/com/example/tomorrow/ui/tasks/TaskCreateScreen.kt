@@ -11,6 +11,7 @@ import android.app.DatePickerDialog
 import androidx.compose.ui.platform.LocalContext
 import java.util.Calendar
 import androidx.compose.ui.Alignment
+import com.example.tomorrow.notification.TaskNotificationService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,13 +22,16 @@ fun TaskCreateScreen(
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf(2) } // Média por padrão
+    var priority by remember { mutableStateOf(2) }
     var deadlineMillis by remember { mutableStateOf<Long?>(null) }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+    val notificationService = remember { TaskNotificationService(context) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
     val isFormValid = title.isNotBlank()
+    var allowNotification by remember { mutableStateOf(false) }
 
     fun openDatePicker() {
         val year = calendar.get(Calendar.YEAR)
@@ -44,9 +48,35 @@ fun TaskCreateScreen(
         datePickerDialog.show()
     }
 
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Permissão de Notificações") },
+            text = { Text("Para receber lembretes, ative as notificações nas configurações do app") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        notificationService.openAppNotificationSettings()
+                        showPermissionDialog = false
+                    }
+                ) {
+                    Text("Habilitar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPermissionDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)
+        .padding(top = 40.dp)
     ) {
         Text("Nova Tarefa", style = MaterialTheme.typography.headlineMedium)
 
@@ -102,9 +132,32 @@ fun TaskCreateScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Habilitar notificação")
+            Switch(
+                checked = allowNotification,
+                onCheckedChange = { newValue ->
+                    if (newValue) {
+                        if (notificationService.areNotificationsEnabled()) {
+                            allowNotification = true
+                        } else {
+                            showPermissionDialog = true
+                        }
+                    } else {
+                        allowNotification = false
+                    }
+                }
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botão Voltar
         OutlinedButton(
             onClick = onCancel,
             modifier = Modifier.fillMaxWidth()
@@ -123,7 +176,8 @@ fun TaskCreateScreen(
                     priority = priority,
                     status = 0,
                     userId = viewModel.getUserId(),
-                    deadlineMillis = deadlineMillis
+                    deadlineMillis = deadlineMillis,
+                    allowNotification = allowNotification
                 )
                 viewModel.addTask(newTask)
                 onTaskCreated()
@@ -135,4 +189,3 @@ fun TaskCreateScreen(
         }
     }
 }
-

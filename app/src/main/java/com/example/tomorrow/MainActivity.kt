@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.tomorrow.data.TaskRepository
-import com.example.tomorrow.data.UserDatabase
+import com.example.tomorrow.data.TaskDatabase
 import com.example.tomorrow.navigation.AuthNavigation
 import com.example.tomorrow.ui.tasks.TaskViewModel
 import com.example.tomorrow.ui.tasks.TaskViewModelFactory
@@ -24,10 +24,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val themeViewModel: ThemeViewModel = viewModel()
-            val db = UserDatabase.getInstance(applicationContext)
+            val db = TaskDatabase.getInstance(applicationContext)
             val repository = TaskRepository(db.taskDao(), db.subTaskDao())
             val taskViewModel: TaskViewModel = viewModel(
-                factory = TaskViewModelFactory(repository)
+                factory = TaskViewModelFactory(repository, this)
             )
 
             themeViewModel.InitializeTheme()
