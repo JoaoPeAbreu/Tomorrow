@@ -27,14 +27,14 @@ A equipe é composta por 3 indíviduos:
 ## Funcionalidades
 O app permite que tarefas sejam criadas com título, descrição, data limite, prioridade, status, subtarefas e há também a possibilidade de habilitar notificações. É possível editar todos os dados referentes a tarefa, além de nome, senha e email do usuário.
 
-As tarefas são listadas em ordem alfabética e de acordo com a data limite. Elas podem ser filtradas tanto por status quanto por prioridade. 
+As tarefas são listadas e ordenada por data limite e por data de criação. Elas podem ser filtradas tanto por status quanto por prioridade. 
 
 Caso as notificações estejam habilitadas, um dia antes da tarefa expirar será mandado uma notificação.
 
 ## Instalação
 Para instalar é preciso ter o Android Studio instalado no computador e as Opções do Desenvolvedor ativada no celular Android.
 
-A ativação da Opções de Desenvolvedor é fácil de ser ativivada. Encontre o número da versão do seu celular no app de Configurações e clique nele 7 vezes seguidas. Após isso volte para a tela inicial e procure Opção de Desenvolvedor. Ative ela e logo após ative Depuração por USB. 
+A ativação da Opções de Desenvolvedor é fácil de ser ativada. Encontre o número da versão do seu celular no app de Configurações e clique nele 7 vezes seguidas. Após isso volte para a tela inicial e procure Opção de Desenvolvedor. Ative ela e logo após ative Depuração por USB. 
 
 O primeiro passo da instalação é clonar esse repositório com o comando git clone na pasta AndroidStudioProjects. Então é necessário abrir o projeto no Android Studio. Conecte seu celular com o computador através de um cabo USB, clique em permitir na caixa de diálogo que aparecer. 
 
