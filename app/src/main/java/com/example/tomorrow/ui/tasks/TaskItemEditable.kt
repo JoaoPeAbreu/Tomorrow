@@ -185,6 +185,16 @@ fun TaskItemEditable(
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
+                            onTaskUpdate(
+                                task.copy(
+                                    title = editedTitle,
+                                    description = editedDescription,
+                                    priority = editedPriority,
+                                    status = editedStatus,
+                                    deadlineMillis = editedDeadline,
+                                    allowNotification = editedallowNotification
+                                )
+                            )
                             isEditing = false
                         },
                         modifier = Modifier.fillMaxWidth()
