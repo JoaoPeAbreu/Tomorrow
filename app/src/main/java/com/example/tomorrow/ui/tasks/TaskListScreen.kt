@@ -1,0 +1,259 @@
+package com.example.tomorrow.ui.tasks
+
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
+import com.example.tomorrow.data.Task
+import java.text.SimpleDateFormat
+import java.util.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaskListScreen(
+    viewModel: TaskViewModel,
+    onCreateTaskClick: () -> Unit,
+    onProfileClick: () -> Unit
+) {
+    var query by remember { mutableStateOf("") }
+    val tasks by viewModel.tasks.collectAsState()
+    var priorityFilter by remember { mutableStateOf<Int?>(null) }
+    var statusFilter by remember { mutableStateOf<Int?>(null) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .padding(top = 40.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Minhas Tarefas",
+                style = MaterialTheme.typography.headlineMedium)
+            IconButton(onClick = onProfileClick) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Perfil"
+                )
+            }
+        }
+        OutlinedTextField(
+            value = query,
+            onValueChange = {
+                query = it
+                viewModel.setQuery(it)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    modifier = Modifier.size(24.dp)
+                )
+            },
+            label = { Text("Buscar tarefas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            shape = MaterialTheme.shapes.small,
+            singleLine = true,
+        )
+        FilterSection(
+            priorityFilter = priorityFilter,
+            onPriorityChange = {
+                priorityFilter = it
+                viewModel.setPriorityFilter(it)
+            },
+            statusFilter = statusFilter,
+            onStatusChange = {
+                statusFilter = it
+                viewModel.setStatusFilter(it)
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onCreateTaskClick,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(bottom = 8.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Nova Tarefa")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Criar Tarefa")
+        }
+
+        if (tasks.isEmpty()) {
+            Text("Nenhuma tarefa encontrada", style = MaterialTheme.typography.bodyLarge)
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                itemsIndexed(tasks) { index, task ->
+                    val subtasks by viewModel.getSubTasksForTask(task.id).collectAsState(initial = emptyList())
+                    val showDeadline = shouldShowDeadline(tasks, index)
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        if (showDeadline && task.deadlineMillis != null) {
+                            val now = System.currentTimeMillis()
+                            val isExpired = task.deadlineMillis < now
+                            val formattedDeadline = remember(task.deadlineMillis) {
+                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                                    .format(Date(task.deadlineMillis))
+                            }
+                            Text(
+                                text = "Data limite: $formattedDeadline" + if (isExpired) " (expirada)" else "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+
+                        TaskItemEditable(
+                            task = task,
+                            subtasks = subtasks,
+                            onTaskUpdate = { updatedTask -> viewModel.updateTask(updatedTask) },
+                            onTaskDelete = { taskToDelete -> viewModel.deleteTask(taskToDelete) },
+                            onSubTaskUpdate = { updatedSubTask -> viewModel.updateSubTask(updatedSubTask) },
+                            onSubTaskCreate = { newSubTask -> viewModel.addSubTask(newSubTask) },
+                            onSubTaskDelete = { subTaskToDelete -> viewModel.deleteSubTask(subTaskToDelete) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun shouldShowDeadline(tasks: List<Task>, currentIndex: Int): Boolean {
+    if (currentIndex == 0) return true
+    val currentTask = tasks[currentIndex]
+    val previousTask = tasks[currentIndex - 1]
+
+    return currentTask.deadlineMillis != previousTask.deadlineMillis
+}
+
+@Composable
+fun FilterSection(
+    priorityFilter: Int?,
+    onPriorityChange: (Int?) -> Unit,
+    statusFilter: Int?,
+    onStatusChange: (Int?) -> Unit,
+) {
+    Column {
+        Text("Filtros", style = MaterialTheme.typography.headlineSmall)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                DropdownFilter(
+                    label = "Prioridade",
+                    options = listOf(
+                        null to "Todas",
+                        1 to "Baixa",
+                        2 to "Média",
+                        3 to "Alta"
+                    ),
+                    selectedOption = priorityFilter,
+                    onOptionSelected = onPriorityChange
+                )
+            }
+
+            Box(modifier = Modifier.weight(1f)) {
+                DropdownFilter(
+                    label = "Status",
+                    options = listOf(
+                        null to "Todos",
+                        0 to "Para fazer",
+                        1 to "Fazendo",
+                        2 to "Feita"
+                    ),
+                    selectedOption = statusFilter,
+                    onOptionSelected = onStatusChange
+                )
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DropdownFilter(
+    label: String,
+    options: List<Pair<Int?, String>>,
+    selectedOption: Int?,
+    onOptionSelected: (Int?) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = options.firstOrNull { it.first == selectedOption }?.second ?: ""
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
+        ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        TextField(
+            modifier = Modifier.fillMaxWidth().menuAnchor(),
+            readOnly = true,
+            value = selectedLabel,
+            onValueChange = {},
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            interactionSource = remember { MutableInteractionSource() }
+                .also { interactionSource ->
+                if (expanded) {
+                    LaunchedEffect(interactionSource) {
+                        interactionSource.emit(
+                            PressInteraction.Press(
+                                pressPosition = Offset.Zero
+                            )
+                        )
+                    }
+                }
+            }
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.exposedDropdownSize()
+        ) {
+            options.forEach { (value, optionLabel) ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel) },
+                    onClick = {
+                        onOptionSelected(value)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+    }
+}

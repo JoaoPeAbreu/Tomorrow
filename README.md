@@ -10,13 +10,32 @@ Universidade Federal do Paraná - UFPR
 
 Prof. Alexander Robert Kutzke
 
-* [Instruções para submissão de tarefas e trabalho](https://tads-ufpr-alexkutzke.github.io/ds122-alexkutzke/instrucoes_submissao_tarefas_e_trabalhos.html#instru%C3%A7%C3%B5es-gerais) - Essas instruções são de web1. Tudo é igual, basta trocar ds122 para ds151. :)
-* [Video aula](https://www.youtube.com/watch?v=d6ZTnQNhoCo)
 
 # Projeto Final DS151 - 2025/1 
 
-Mais informações: <https://tads-ufpr-alexkutzke.github.io/ds151-alexkutzke/13_projeto.html>
+O projeto se trata de um app de organização e gerenciamento de tarefas desenvolvido como trabalho final para a matéria DS151 - Desenvolvimento para Dispositivos Móveis. 
 
-Cada equipe deve fazer apenas 1 fork do projeto acima.
+Foi desenvolvido usando Kotlin no Android Studio, com a arquitetura MVVM. A autenticação foi feita usando Firebase e o banco de dados utilizados foi o Room Database.
 
-Os membros da equipe devem ser adicionados pela interface do Gitlab como desenvolvedores no projeto. O arquivo README deverá conter o nome dos integrantes do grupo.
+## Equipe
+A equipe é composta por 3 indíviduos: 
+
+- Gabriela Morais Gandine
+- João Pedro Abreu 
+- Juliano da Silva Filho
+
+## Funcionalidades
+O app permite que tarefas sejam criadas com título, descrição, data limite, prioridade, status, subtarefas e há também a possibilidade de habilitar notificações. É possível editar todos os dados referentes a tarefa, além de nome, senha e email do usuário.
+
+As tarefas são listadas e ordenada por data limite e por data de criação. Elas podem ser filtradas tanto por status quanto por prioridade. 
+
+Caso as notificações estejam habilitadas, um dia antes da tarefa expirar será mandado uma notificação.
+
+## Instalação
+Para instalar é preciso ter o Android Studio instalado no computador e as Opções do Desenvolvedor ativada no celular Android.
+
+A ativação da Opções de Desenvolvedor é fácil de ser ativada. Encontre o número da versão do seu celular no app de Configurações e clique nele 7 vezes seguidas. Após isso volte para a tela inicial e procure Opção de Desenvolvedor. Ative ela e logo após ative Depuração por USB. 
+
+O primeiro passo da instalação é clonar esse repositório com o comando git clone na pasta AndroidStudioProjects. Então é necessário abrir o projeto no Android Studio. Conecte seu celular com o computador através de um cabo USB, clique em permitir na caixa de diálogo que aparecer. 
+
+Por fim ao ver o nome do seu dispositivo na aba de cima do Android Studio clique na seta verde ao lado e espere o app ser baixado em seu dispositivo móvel.
